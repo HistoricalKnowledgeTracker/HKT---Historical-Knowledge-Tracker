@@ -1,0 +1,1021 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+	<link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Dancing+Script:wght@600&display=swap" rel="stylesheet">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DW Work Log — DreamWeaver Work Log</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Segoe UI',Tahoma,sans-serif;background:linear-gradient(135deg,#fce4ec,#f3e5f5,#ede7f6);color:#1a1a1a;height:100vh;display:flex;flex-direction:column;position:relative;overflow:hidden}
+body::before{content:'';position:fixed;bottom:0;left:0;width:100%;height:200px;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 200'%3E%3Cpath d='M0,100 Q360,40 720,100 T1440,100 V200 H0 Z' fill='%23D4537E' opacity='0.10'/%3E%3Cpath d='M0,130 Q360,80 720,130 T1440,130 V200 H0 Z' fill='%237F77DD' opacity='0.12'/%3E%3C/svg%3E") bottom no-repeat;background-size:cover;pointer-events:none;z-index:0}
+.app{display:flex;height:100vh;overflow:hidden;background:transparent;position:relative;z-index:1}
+
+/* Sidebar */
+.sidebar{width:210px;background:#fff;border-right:1px solid #e8e8e4;display:flex;flex-direction:column;flex-shrink:0;position:relative;overflow:hidden;z-index:10}
+
+/* Sidebar video background */
+.sidebar-video-wrap{position:absolute;top:0;left:0;right:0;bottom:0;overflow:hidden;z-index:0;pointer-events:none}
+.sidebar-video-wrap video{width:100%;height:100%;object-fit:cover;opacity:0.55}
+.sidebar-video-wrap::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(255,255,255,0.35) 0%,rgba(253,242,246,0.25) 50%,rgba(243,232,251,0.35) 100%)}
+.sidebar-bg{position:absolute;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none}
+.sidebar .logo,.sidebar .nav,.sidebar .user-area{position:relative;z-index:1}
+.logo{padding:20px 16px 14px;border-bottom:1px solid #e8e8e4}
+.logo-title{font-size:15px;font-weight:600;color:#1a1a1a;display:flex;align-items:center;gap:8px}
+.logo-icon{width:28px;height:28px;background:linear-gradient(135deg,#7F77DD,#D4537E,#F0997B);border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-size:11px;font-weight:700;letter-spacing:0.5px}
+.logo-sub{font-size:11px;color:#999;margin-top:3px}
+.nav{padding:12px 8px;flex:1;overflow-y:auto}
+.nav-item{display:flex;align-items:center;gap:9px;padding:8px 12px;border-radius:7px;cursor:pointer;font-size:13px;color:#666;margin-bottom:2px;border:none;background:none;width:100%;text-align:left;transition:all 0.15s}
+.nav-item:hover{background:#f0f0ea;color:#1a1a1a}
+.nav-item.active{background:#EBF3FB;color:#185FA5;font-weight:600}
+.nav-icon{font-size:16px;width:18px;text-align:center}
+.nav-icon-svg{flex-shrink:0;vertical-align:middle}
+.user-area{padding:12px 8px;border-top:1px solid #e8e8e4}
+.user-card{display:flex;align-items:center;gap:9px;padding:8px 12px;border-radius:7px;cursor:pointer}
+.user-card:hover{background:#f0f0ea}
+.avatar{width:30px;height:30px;border-radius:50%;background:#EBF3FB;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:#185FA5;flex-shrink:0}
+.user-name{font-size:13px;font-weight:500}
+.user-role{font-size:11px;color:#999}
+
+/* Main */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;position:relative}
+.topbar{background:#fff;border-bottom:1px solid #e8e8e4;padding:0 20px;height:52px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;position:relative;z-index:2}
+.page-title{font-size:15px;font-weight:600;background:linear-gradient(135deg,#7F77DD,#D4537E,#F0997B);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;display:inline-block}
+.topbar-actions{display:flex;gap:8px}
+.btn{padding:7px 14px;border-radius:7px;font-size:13px;cursor:pointer;border:1px solid #ddd;background:#fff;color:#1a1a1a;display:inline-flex;align-items:center;gap:6px;transition:all 0.15s;font-family:inherit}
+.btn:hover{background:#f5f5f0;border-color:#bbb}
+.btn.primary{background:linear-gradient(135deg,#7F77DD,#D4537E,#F0997B);color:#fff;border-color:transparent}
+.btn.primary:hover{background:linear-gradient(135deg,#6A61D1,#C13D6B,#E8835F)}
+.btn.danger{color:#A32D2D;border-color:#F7C1C1}
+.btn.danger:hover{background:#FCEBEB}
+.content{flex:1;overflow-y:auto;padding:20px;position:relative;z-index:1}
+.page{display:none}
+.page.active{display:block}
+
+/* Stats */
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
+.stat-card{background:#fff;border:1px solid #e8e8e4;border-radius:10px;padding:14px 16px;position:relative;overflow:hidden;box-shadow:0 2px 10px rgba(124,77,255,0.06);display:flex;align-items:center;gap:12px}
+.stat-card::before{content:'';position:absolute;top:-20px;right:-20px;width:70px;height:70px;border-radius:50%;opacity:0.15}
+.stat-card.c1::before{background:#7F77DD}
+.stat-card.c2::before{background:#185FA5}
+.stat-card.c3::before{background:#3B6D11}
+.stat-card.c4::before{background:#F0997B}
+.stat-icon-svg{flex-shrink:0;position:relative;z-index:1}
+.stat-text{flex:1;min-width:0;position:relative;z-index:1}
+.stat-label{font-size:12px;color:#888;margin-bottom:4px}
+.stat-value{font-size:24px;font-weight:600;color:#1a1a1a}
+.stat-value.c1{background:linear-gradient(135deg,#7F77DD,#A89AE8);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.stat-value.c2{background:linear-gradient(135deg,#185FA5,#5AA0DC);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.stat-value.c3{background:linear-gradient(135deg,#3B6D11,#7BAE3F);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.stat-value.c4{background:linear-gradient(135deg,#D4537E,#F0997B);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.stat-sub{font-size:11px;color:#aaa;margin-top:3px}
+
+/* Section */
+.section{background:#fff;border:1px solid #e8e8e4;border-radius:10px;padding:16px 18px;margin-bottom:16px;box-shadow:0 2px 10px rgba(124,77,255,0.06)}
+.section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.section-title{font-size:14px;font-weight:600;color:#1a1a1a;background:linear-gradient(135deg,#7F77DD,#D4537E,#F0997B);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;display:inline-flex;align-items:center;gap:6px}
+
+/* Table */
+.table{width:100%;border-collapse:collapse;font-size:13px}
+.table th{text-align:left;padding:8px 10px;color:#888;font-weight:500;font-size:12px;border-bottom:1px solid #f0f0ea;white-space:nowrap}
+.table td{padding:10px 10px;border-bottom:1px solid #f5f5f0;color:#4A3B68;vertical-align:middle}
+.table tr:last-child td{border-bottom:none}
+.table tr:hover td{background:#fafaf8}
+
+/* Badge */
+.badge{display:inline-flex;align-items:center;padding:3px 9px;border-radius:20px;font-size:11px;font-weight:600}
+.badge-green{background:#EAF3DE;color:#3B6D11}
+.badge-amber{background:#FAEEDA;color:#854F0B}
+.badge-blue{background:#EBF3FB;color:#185FA5}
+.badge-red{background:#FCEBEB;color:#A32D2D}
+
+/* Filter */
+.filter-row{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;align-items:center}
+.filter-row input,.filter-row select{font-size:13px;padding:7px 10px;border-radius:7px;border:1px solid #ddd;background:#fff;color:#1a1a1a;height:34px;font-family:inherit}
+.filter-row input:focus,.filter-row select:focus{outline:none;border-color:#185FA5}
+
+/* Form */
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.form-full{grid-column:1/-1}
+.form-group{display:flex;flex-direction:column;gap:5px}
+.form-group label{font-size:12px;color:#666;font-weight:500}
+.form-group input,.form-group select,.form-group textarea{width:100%;font-size:13px;padding:8px 10px;border-radius:7px;border:1px solid #ddd;background:#fff;color:#1a1a1a;font-family:inherit;transition:border 0.15s}
+.form-group input:focus,.form-group select:focus,.form-group textarea:focus{outline:none;border-color:#185FA5}
+.form-group textarea{min-height:80px;resize:vertical}
+.time-row{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+
+/* Two col */
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+
+/* Mini stat */
+.mini-stat-row{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid #f5f5f0;font-size:13px}
+.mini-stat-row:last-child{border-bottom:none}
+.mini-stat-row .label{color:#666}
+.mini-stat-row .value{font-weight:600;color:#1a1a1a}
+
+/* Bar chart */
+.chart-wrap{display:flex;align-items:flex-end;gap:6px;height:120px;padding:4px 0}
+.bar-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px}
+.bar{width:100%;background:#185FA5;border-radius:3px 3px 0 0;min-height:3px;transition:height 0.3s}
+.bar-lbl{font-size:10px;color:#aaa}
+.bar-cnt{font-size:10px;color:#185FA5;font-weight:600}
+
+/* Modal */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.4);display:none;align-items:center;justify-content:center;z-index:200}
+.modal-overlay.open{display:flex}
+.modal{background:#fff;border-radius:12px;border:1px solid #e8e8e4;padding:24px;width:520px;max-height:90vh;overflow-y:auto}
+.modal-title{font-size:16px;font-weight:600;margin-bottom:18px}
+.modal-footer{display:flex;gap:8px;justify-content:flex-end;margin-top:18px}
+
+/* Toast */
+.toast{position:fixed;bottom:24px;right:24px;background:#1a1a1a;color:#fff;padding:10px 18px;border-radius:8px;font-size:13px;z-index:300;opacity:0;transition:opacity 0.3s;pointer-events:none}
+.toast.show{opacity:1}
+
+/* Empty state */
+.empty{text-align:center;padding:40px 20px;color:#aaa;font-size:13px}
+.empty-pretty{text-align:center;padding:32px 10px;color:#c9a8c2;font-size:13px;background:linear-gradient(135deg,#fdf2f6,#f7f0fb);border-radius:10px}
+
+/* Action buttons */
+.action-btns{display:flex;gap:4px}
+.icon-btn{padding:5px 8px;border-radius:6px;font-size:12px;cursor:pointer;border:1px solid #e8e8e4;background:#fff;display:inline-flex;align-items:center;gap:4px;transition:all 0.15s;font-family:inherit}
+.icon-btn:hover{background:#f5f5f0}
+.icon-btn.del{color:#A32D2D}
+.icon-btn.del:hover{background:#FCEBEB;border-color:#F7C1C1}
+
+/* Paste area */
+.paste-area{width:100%;min-height:140px;font-family:'Consolas',monospace;font-size:12px;padding:10px;border-radius:8px;border:1px dashed #c9a8c2;background:#fdf9fb;resize:vertical}
+.paste-area:focus{outline:none;border-color:#D4537E;background:#fff}
+.paste-hint{font-size:11px;color:#aaa;margin-top:6px}
+.preview-note{font-size:12px;color:#7F77DD;background:#F3E8FB;padding:8px 12px;border-radius:8px;margin-bottom:10px;display:none}
+.preview-note.show{display:block}
+
+/* ========== LOGIN PAGE ========== */
+.login-wrap{display:flex;align-items:center;justify-content:center;min-height:100vh;background:transparent;position:relative;z-index:1;padding:24px}
+.login-box{background:linear-gradient(160deg,#ffffff,#fdf2f6 55%,#f3e8fb);border:1px solid #e8e8e4;border-radius:22px;padding:36px 32px;width:420px;position:relative;overflow:hidden;box-shadow:0 24px 60px -16px rgba(124,77,255,0.28)}
+.login-bubbles{position:absolute;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none}
+.login-inner{position:relative;z-index:1;width:100%}
+.login-logo{text-align:center;margin-bottom:22px}
+.login-logo .logo-icon{width:52px;height:52px;border-radius:50%;font-size:14px;font-weight:700;letter-spacing:0.5px;margin:0 auto 14px;box-shadow:0 8px 18px -6px rgba(124,77,255,0.45)}
+.login-logo h1{font-size:19px;font-weight:400;font-family:'Pacifico',cursive;color:#ffffff;background:linear-gradient(135deg,#7F77DD,#D4537E,#F0997B);padding:9px 22px;border-radius:30px;letter-spacing:0.3px;display:inline-flex;align-items:center;gap:8px;white-space:nowrap;box-shadow:0 8px 20px -8px rgba(212,83,126,0.5)}
+.login-logo p{font-size:13px;color:#D4537E;margin-top:9px;font-style:italic;letter-spacing:0.3px;font-family:'Dancing Script',cursive}
+.login-select-label{font-size:10.5px;color:#a880c0;letter-spacing:0.8px;font-weight:600;text-transform:uppercase;margin-bottom:10px;padding-left:2px}
+.user-list{display:flex;flex-direction:column;gap:8px;margin-bottom:18px}
+
+/* ---- user card with diagonal slash ---- */
+.user-opt{
+  position:relative;
+  height:62px;
+  border-radius:12px;
+  overflow:hidden;
+  cursor:pointer;
+  border:1.5px solid rgba(212,83,126,0.18);
+  transition:transform .18s,border-color .2s,box-shadow .2s;
+  box-shadow:0 2px 8px rgba(127,119,221,0.08);
+}
+.user-opt:hover{
+  transform:translateY(-2px);
+  border-color:rgba(212,83,126,0.45);
+  box-shadow:0 6px 18px rgba(212,83,126,0.15);
+}
+.user-opt.selected{
+  border-color:#D4537E;
+  box-shadow:0 6px 20px rgba(212,83,126,0.25);
+}
+.uopt-bg-left{position:absolute;inset:0;background:#fff}
+.uopt-bg-right{
+  position:absolute;inset:0 0 0 58%;
+  background:linear-gradient(135deg,#fbeaf2,#f5e6f8);
+  transform:translateX(100%);
+  transition:transform 0.3s cubic-bezier(0.34,1.1,0.64,1);
+}
+.user-opt.selected .uopt-bg-right{
+  background:linear-gradient(135deg,#f9d8ea,#f0d8f6);
+  transform:translateX(0);
+}
+.uopt-slash{position:absolute;inset:0;width:100%;height:100%}
+.uopt-inner{position:relative;z-index:3;display:flex;align-items:center;height:100%;padding:0 13px 0 12px}
+.user-opt-avatar{
+  width:38px;height:38px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-size:14px;font-weight:700;color:#fff;
+  flex-shrink:0;
+  border:2px solid rgba(255,255,255,0.8);
+  box-shadow:0 2px 8px rgba(0,0,0,0.15);
+  overflow:hidden;
+}
+.user-opt-avatar img{width:100%;height:100%;object-fit:cover;display:block}
+.uopt-info{flex:1;padding:0 10px;min-width:0;overflow:hidden}
+
+/* ---- gradient text for user name ---- */
+.user-opt-name{
+  font-size:12.5px;font-weight:700;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  letter-spacing:.1px;
+  background:linear-gradient(135deg,#7F77DD,#D4537E,#F0997B);
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+  background-clip:text;
+}
+.user-opt.selected .user-opt-name{
+  background:linear-gradient(135deg,#7F77DD,#D4537E,#F0997B);
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
+  background-clip:text;
+}
+
+.uopt-right{display:flex;align-items:center;gap:5px;flex-shrink:0;overflow:hidden}
+.uopt-role{
+  font-size:10px;font-weight:700;letter-spacing:.3px;
+  padding:4px 11px;border-radius:20px;white-space:nowrap;
+  background:#fff;border:1.5px solid #e4b8d0;color:#993556;
+  transform:translateX(120%);
+  transition:transform 0.3s cubic-bezier(0.34,1.1,0.64,1) 0.05s;
+}
+.user-opt.selected .uopt-role{
+  background:#fbeaf0;border-color:#D4537E;color:#72243E;
+  transform:translateX(0);
+}
+.user-opt-check{font-size:15px;color:#D4537E;opacity:0;transform:translateX(20px);transition:opacity .2s,transform .3s cubic-bezier(0.34,1.1,0.64,1) 0.1s}
+.user-opt.selected .user-opt-check{opacity:1;transform:translateX(0)}
+
+
+#login-btn:disabled{opacity:0.4;cursor:not-allowed;filter:grayscale(0.3)}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div class="login-wrap" id="loginPage">
+  <div class="login-box">
+    <svg class="login-bubbles" viewBox="0 0 420 560" preserveAspectRatio="xMidYMid slice">
+      <circle cx="380" cy="20" r="70" fill="#7F77DD" opacity="0.16"/>
+      <circle cx="10" cy="540" r="80" fill="#D4537E" opacity="0.16"/>
+      <circle cx="370" cy="500" r="30" fill="#F0997B" opacity="0.16"/>
+    </svg>
+    <div class="login-inner">
+      <div class="login-logo">
+        <div class="logo-icon">PEA</div>
+        <h1><i class="ti ti-sparkles" style="font-size:16px"></i>HKT REPORT</h1>
+        <p>Historical Knowledge Tracker</p>
+      </div>
+      <div class="login-select-label">เลือกผู้ใช้เพื่อเข้าสู่ระบบ</div>
+      <div id="user-list" class="user-list"></div>
+      <button class="btn primary" id="login-btn" style="width:100%;justify-content:center" onclick="doLogin()" disabled>เข้าสู่ระบบ</button>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN APP -->
+<div class="app" id="mainApp" style="display:none">
+  <div class="sidebar">
+    <div class="sidebar-video-wrap">
+      <video autoplay muted loop playsinline>
+        <source src="bg-video.mp4" type="video/mp4">
+      </video>
+    </div>
+    <svg class="sidebar-bg" viewBox="0 0 210 960" preserveAspectRatio="xMidYMid slice">
+      <defs><radialGradient id="sidebarRg" cx="0.85" cy="0" r="0.6"><stop offset="0" stop-color="#EEEDFE"/><stop offset="1" stop-color="#ffffff" stop-opacity="0"/></radialGradient></defs>
+      <rect width="210" height="960" fill="url(#sidebarRg)"/>
+      <circle cx="190" cy="25" r="55" fill="#7F77DD" opacity="0.10"/>
+      <circle cx="-15" cy="850" r="90" fill="#D4537E" opacity="0.10"/>
+      <circle cx="175" cy="780" r="28" fill="#F0997B" opacity="0.10"/>
+      <circle cx="25" cy="380" r="16" fill="#7F77DD" opacity="0.06"/>
+      <circle cx="195" cy="520" r="20" fill="#D4537E" opacity="0.06"/>
+      <path d="M0 915 Q55 900 110 915 T220 915 V960 H0 Z" fill="#D4537E" opacity="0.06"/>
+    </svg>
+    <div class="logo">
+      <div style="font-size:13px;font-weight:400;font-family:'Pacifico',cursive;color:#ffffff;background:linear-gradient(135deg,#7F77DD,#D4537E,#F0997B);padding:8px 14px;border-radius:30px;display:inline-flex;align-items:center;gap:6px;white-space:nowrap"><i class="ti ti-sparkles" style="font-size:14px"></i>HKT REPORT</div>
+      <div class="logo-sub" style="margin-top:6px">Historical Knowledge Tracker</div>
+    </div>
+    <nav class="nav">
+      <button class="nav-item active" onclick="showPage('dashboard',this)">
+        <svg class="nav-icon-svg" width="18" height="18" viewBox="0 0 64 64">
+          <circle cx="32" cy="32" r="24" fill="#E6F1FB"/>
+          <circle cx="32" cy="32" r="24" fill="none" stroke="#185FA5" stroke-width="5" stroke-dasharray="40 100" stroke-linecap="round">
+            <animateTransform attributeName="transform" type="rotate" from="0 32 32" to="360 32 32" dur="2.4s" repeatCount="indefinite"/>
+          </circle>
+        </svg> ภาพรวม
+      </button>
+      <button class="nav-item" onclick="showPage('logs',this)">
+        <svg class="nav-icon-svg" width="18" height="18" viewBox="0 0 64 64">
+          <rect x="16" y="10" width="32" height="40" rx="3" fill="#FBEAF0"/>
+          <line x1="22" y1="22" x2="42" y2="22" stroke="#D4537E" stroke-width="3" stroke-linecap="round"/>
+          <line x1="22" y1="32" x2="42" y2="32" stroke="#D4537E" stroke-width="3" stroke-linecap="round" opacity="0.7"/>
+          <line x1="22" y1="42" x2="34" y2="42" stroke="#D4537E" stroke-width="3" stroke-linecap="round" opacity="0.5">
+            <animate attributeName="x2" values="34;38;34" dur="1.8s" repeatCount="indefinite"/>
+          </line>
+        </svg> บันทึกงาน
+      </button>
+      <button class="nav-item" onclick="showPage('add',this)">
+        <svg class="nav-icon-svg" width="18" height="18" viewBox="0 0 64 64">
+          <circle cx="32" cy="32" r="22" fill="#EEEDFE"/>
+          <line x1="32" y1="20" x2="32" y2="44" stroke="#534AB7" stroke-width="4" stroke-linecap="round">
+            <animateTransform attributeName="transform" type="scale" values="1;1.15;1" dur="1.4s" repeatCount="indefinite" additive="sum"/>
+          </line>
+          <line x1="20" y1="32" x2="44" y2="32" stroke="#534AB7" stroke-width="4" stroke-linecap="round">
+            <animateTransform attributeName="transform" type="scale" values="1;1.15;1" dur="1.4s" repeatCount="indefinite" additive="sum"/>
+          </line>
+        </svg> เพิ่มงานใหม่
+      </button>
+      <button class="nav-item" onclick="showPage('bills',this)">
+        <svg class="nav-icon-svg" width="18" height="18" viewBox="0 0 64 64">
+          <rect x="16" y="10" width="24" height="32" rx="3" fill="#FBEAF0"/>
+          <circle cx="42" cy="38" r="10" fill="#D4537E"/>
+          <text x="42" y="42" text-anchor="middle" font-size="11" font-weight="600" fill="#FBEAF0">฿</text>
+          <circle cx="42" cy="38" r="10" fill="none" stroke="#D4537E" stroke-width="1.5" opacity="0">
+            <animate attributeName="r" values="10;16" dur="1.6s" repeatCount="indefinite"/>
+            <animate attributeName="opacity" values="0.6;0" dur="1.6s" repeatCount="indefinite"/>
+          </circle>
+        </svg> บิลและใบแจ้งหนี้
+      </button>
+      <button class="nav-item" onclick="showPage('stats',this)">
+        <svg class="nav-icon-svg" width="18" height="18" viewBox="0 0 64 64">
+          <rect x="14" y="38" width="9" height="16" rx="1.5" fill="#7BAE3F">
+            <animate attributeName="height" values="16;20;16" dur="1.6s" repeatCount="indefinite"/>
+            <animate attributeName="y" values="38;34;38" dur="1.6s" repeatCount="indefinite"/>
+          </rect>
+          <rect x="28" y="26" width="9" height="28" rx="1.5" fill="#3B6D11">
+            <animate attributeName="height" values="28;34;28" dur="1.6s" begin="0.2s" repeatCount="indefinite"/>
+            <animate attributeName="y" values="26;20;26" dur="1.6s" begin="0.2s" repeatCount="indefinite"/>
+          </rect>
+          <rect x="42" y="16" width="9" height="38" rx="1.5" fill="#27500A">
+            <animate attributeName="height" values="38;44;38" dur="1.6s" begin="0.4s" repeatCount="indefinite"/>
+            <animate attributeName="y" values="16;10;16" dur="1.6s" begin="0.4s" repeatCount="indefinite"/>
+          </rect>
+        </svg> สถิติ
+      </button>
+    </nav>
+    <div class="user-area">
+      <div class="user-card" onclick="logout()">
+        <div class="avatar" id="sidebar-avatar" style="overflow:hidden"></div>
+        <div>
+          <div class="user-name" id="sidebar-name" style="background:linear-gradient(135deg,#7F77DD,#D4537E,#F0997B);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;font-weight:600">-</div>
+          <div class="user-role">คลิกเพื่อออกจากระบบ</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="page-title" id="pageTitle">ภาพรวมการทำงาน</div>
+      <div class="topbar-actions">
+        <button class="btn" onclick="exportCSV()">⬇ Export CSV</button>
+        <button class="btn primary" onclick="gotoAdd()">+ เพิ่มงาน</button>
+      </div>
+    </div>
+
+    <div class="content">
+
+      <!-- DASHBOARD -->
+      <div class="page active" id="page-dashboard">
+        <div class="stats-grid">
+          <div class="stat-card c1">
+            <svg class="stat-icon-svg" width="44" height="44" viewBox="0 0 64 64">
+              <defs><linearGradient id="gradFolder" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#AFA9EC"/><stop offset="1" stop-color="#534AB7"/></linearGradient></defs>
+              <g><animateTransform attributeName="transform" type="translate" values="0 0;0 -5;0 0" dur="2s" repeatCount="indefinite"/>
+                <path d="M14 22 L14 16 Q14 14 16 14 L26 14 L30 18 L48 18 Q50 18 50 20 L50 22 Z" fill="#7F77DD"/>
+                <rect x="12" y="22" width="40" height="22" rx="3" fill="url(#gradFolder)"/>
+                <rect x="12" y="22" width="40" height="5" rx="2" fill="#EEEDFE" opacity="0.5"/>
+              </g>
+            </svg>
+            <div class="stat-text">
+              <div class="stat-label">โปรเจกต์ทั้งหมด</div>
+              <div class="stat-value c1" id="s-total">0</div>
+              <div class="stat-sub">ของฉัน</div>
+            </div>
+          </div>
+          <div class="stat-card c2">
+            <svg class="stat-icon-svg" width="44" height="44" viewBox="0 0 64 64">
+              <circle cx="32" cy="32" r="24" fill="#E6F1FB"/>
+              <circle cx="32" cy="32" r="24" fill="none" stroke="#B5D4F4" stroke-width="4"/>
+              <circle cx="32" cy="32" r="24" fill="none" stroke="#185FA5" stroke-width="4" stroke-dasharray="50 100" stroke-linecap="round">
+                <animateTransform attributeName="transform" type="rotate" from="0 32 32" to="360 32 32" dur="1.4s" repeatCount="indefinite"/>
+              </circle>
+              <circle cx="32" cy="32" r="6" fill="#185FA5"><animate attributeName="r" values="6;7.5;6" dur="1.4s" repeatCount="indefinite"/></circle>
+            </svg>
+            <div class="stat-text">
+              <div class="stat-label">กำลังทำ</div>
+              <div class="stat-value c2" id="s-inprog">0</div>
+              <div class="stat-sub">รายการ</div>
+            </div>
+          </div>
+          <div class="stat-card c3">
+            <svg class="stat-icon-svg" width="44" height="44" viewBox="0 0 64 64">
+              <circle cx="32" cy="32" r="26" fill="#EAF3DE"/>
+              <path d="M20 32 L28 41 L46 21" fill="none" stroke="#27500A" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" stroke-dasharray="34" stroke-dashoffset="34">
+                <animate attributeName="stroke-dashoffset" values="34;0;34" dur="2.4s" repeatCount="indefinite"/>
+              </path>
+            </svg>
+            <div class="stat-text">
+              <div class="stat-label">เสร็จแล้ว</div>
+              <div class="stat-value c3" id="s-done">0</div>
+              <div class="stat-sub">รายการ</div>
+            </div>
+          </div>
+          <div class="stat-card c4">
+            <svg class="stat-icon-svg" width="44" height="44" viewBox="0 0 64 64">
+              <defs><linearGradient id="gradBill" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ED93B1"/><stop offset="1" stop-color="#D4537E"/></linearGradient></defs>
+              <g><animateTransform attributeName="transform" type="translate" values="0 0;0 -3;0 0" dur="2.2s" repeatCount="indefinite"/>
+                <rect x="16" y="10" width="26" height="34" rx="3" fill="url(#gradBill)"/>
+              </g>
+              <circle cx="44" cy="42" r="11" fill="#72243E"/>
+              <text x="44" y="46" text-anchor="middle" font-size="13" font-weight="500" fill="#FBEAF0">฿</text>
+              <circle cx="44" cy="42" r="11" fill="none" stroke="#ED93B1" stroke-width="2" opacity="0">
+                <animate attributeName="r" values="11;17" dur="1.4s" repeatCount="indefinite"/>
+                <animate attributeName="opacity" values="0.6;0" dur="1.4s" repeatCount="indefinite"/>
+              </circle>
+            </svg>
+            <div class="stat-text">
+              <div class="stat-label">ใบแจ้งหนี้ทั้งหมด</div>
+              <div class="stat-value c4" id="s-bills">0</div>
+              <div class="stat-sub">ฉบับ</div>
+            </div>
+          </div>
+        </div>
+        <div class="two-col">
+          <div class="section">
+            <div class="section-header"><span class="section-title"><i class="ti ti-list-details"></i>งาน 5 รายการล่าสุด</span></div>
+            <table class="table">
+              <thead><tr><th>โปรเจกต์</th><th>สถานะ</th><th>วันที่</th></tr></thead>
+              <tbody id="recent-tbody"></tbody>
+            </table>
+          </div>
+          <div class="section">
+            <div class="section-header"><span class="section-title"><i class="ti ti-users"></i>งานตามการไฟฟ้า</span></div>
+            <div id="client-stats"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- LOGS -->
+      <div class="page" id="page-logs">
+        <div class="filter-row">
+          <input type="text" id="search" placeholder="🔍 ค้นหาโปรเจกต์ / การไฟฟ้า..." oninput="renderLogs()" style="width:220px">
+          <select id="filterStatus" onchange="renderLogs()">
+            <option value="">ทุกสถานะ</option>
+            <option value="กำลังทำ">กำลังทำ</option>
+            <option value="รอตรวจ">รอตรวจ</option>
+            <option value="เสร็จแล้ว">เสร็จแล้ว</option>
+            <option value="ยกเลิก">ยกเลิก</option>
+          </select>
+          <input type="date" id="filterDate" onchange="renderLogs()">
+          <button class="btn" onclick="clearFilters()">ล้าง</button>
+        </div>
+        <div class="section">
+          <table class="table">
+            <thead>
+              <tr>
+                <th>โปรเจกต์ / ไฟล์</th>
+                <th>การไฟฟ้าที่แจ้งปัญหา</th>
+                <th>วันที่เริ่มดำเนินการ</th>
+                <th>วันที่ดำเนินการเสร็จ</th>
+                <th>สถานะ</th>
+                <th>โน้ต</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="log-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ADD -->
+      <div class="page" id="page-add">
+        <div class="section" style="max-width:580px">
+          <div class="section-header"><span class="section-title">บันทึกงานใหม่</span></div>
+          <div class="form-grid">
+            <div class="form-group form-full">
+              <label>ชื่อโปรเจกต์ / ไฟล์ *</label>
+              <input type="text" id="f-project" placeholder="เช่น Homepage_v3.dw, Banner_ABC.dw">
+            </div>
+            <div class="form-group">
+              <label>การไฟฟ้าที่แจ้งปัญหา</label>
+              <input type="text" id="f-client" placeholder="เช่น การไฟฟ้าเขต 1">
+            </div>
+            <div class="form-group">
+              <label>สถานะ</label>
+              <select id="f-status">
+                <option value="กำลังทำ">กำลังทำ</option>
+                <option value="รอตรวจ">รอตรวจ</option>
+                <option value="เสร็จแล้ว">เสร็จแล้ว</option>
+                <option value="ยกเลิก">ยกเลิก</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>วันที่เริ่มดำเนินการ</label>
+              <input type="date" id="f-date">
+            </div>
+            <div class="form-group">
+              <label>วันที่ดำเนินการเสร็จ</label>
+              <input type="date" id="f-end">
+            </div>
+            <div class="form-group form-full">
+              <label>โน้ต / รายละเอียดเพิ่มเติม</label>
+              <textarea id="f-note" placeholder="รายละเอียดงาน, ปัญหาที่พบ, สิ่งที่ทำไป, version ไฟล์ ฯลฯ"></textarea>
+            </div>
+          </div>
+          <div style="margin-top:16px;display:flex;gap:8px">
+            <button class="btn primary" onclick="saveLog()">💾 บันทึกงาน</button>
+            <button class="btn" onclick="clearForm()">✕ ล้างข้อมูล</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- BILLS / INVOICES -->
+      <div class="page" id="page-bills">
+        <div class="section">
+          <div class="section-header"><span class="section-title"><i class="ti ti-clipboard-text"></i>วางข้อมูลจาก Excel / BPM</span></div>
+          <div class="form-grid" style="margin-bottom:14px">
+            <div class="form-group">
+              <label>วันที่ของรายงานนี้</label>
+              <input type="date" id="bill-date">
+            </div>
+            <div class="form-group">
+              <label>หมายเลขกระดาษบิล — เริ่ม</label>
+              <input type="text" id="bill-paper-start" placeholder="เช่น A00268746">
+            </div>
+            <div class="form-group">
+              <label>หมายเลขกระดาษบิล — สิ้นสุด</label>
+              <input type="text" id="bill-paper-end" placeholder="เช่น A00268900">
+            </div>
+            <div class="form-group">
+              <label>บิลที่ชำรุด</label>
+              <input type="text" id="bill-paper-damaged" placeholder="เช่น A00268750, A00268760">
+            </div>
+          </div>
+          <p style="font-size:12px;color:#888;margin-bottom:8px">คัดลอกตารางจาก Excel (คอลัมน์: ลำดับ, พิมพ์ใบเสร็จลำดับที่, สาย, ใบแจ้งค่าไฟฟ้าเลขที่, จำนวนฉบับ, หมายเหตุ) แล้ววางที่นี่</p>
+          <textarea class="paste-area" id="bill-paste" placeholder="วางข้อมูลที่คัดลอกจาก Excel ที่นี่..."></textarea>
+          <div class="paste-hint">วางข้อมูลแบบคั่นด้วย Tab (คัดลอกตรงจาก Excel ได้เลย) ระบบจะแยกแถวให้อัตโนมัติ</div>
+          <div style="margin-top:12px;display:flex;gap:8px">
+            <button class="btn primary" onclick="parseBillPaste()"><i class="ti ti-wand"></i> แยกข้อมูล</button>
+            <button class="btn" onclick="clearBillPaste()">✕ ล้างข้อมูลที่วาง</button>
+          </div>
+          <div class="preview-note" id="bill-preview-note"></div>
+          <div id="bill-preview-wrap" style="display:none;margin-top:14px">
+            <table class="table" id="bill-preview-table">
+              <thead>
+                <tr>
+                  <th>ลำดับ</th><th>พิมพ์ใบเสร็จลำดับที่</th><th>สาย</th><th>ใบแจ้งค่าไฟฟ้าเลขที่</th>
+                  <th>จำนวนฉบับ</th><th>เลขกระดาษบิล เริ่ม</th><th>เลขกระดาษบิล สิ้นสุด</th><th>บิลที่ชำรุด</th><th>หมายเหตุ</th>
+                </tr>
+              </thead>
+              <tbody id="bill-preview-tbody"></tbody>
+            </table>
+            <div style="margin-top:12px;display:flex;gap:8px">
+              <button class="btn primary" onclick="confirmSaveBills()"><i class="ti ti-check"></i> บันทึกทั้งหมด</button>
+              <button class="btn" onclick="cancelBillPreview()">✕ ยกเลิก</button>
+            </div>
+          </div>
+        </div>
+        <div class="section">
+          <div class="section-header">
+            <span class="section-title"><i class="ti ti-file-invoice"></i>รายการที่บันทึกไว้</span>
+            <button class="icon-btn del" onclick="clearAllBills()"><i class="ti ti-trash"></i> ล้างทั้งหมด</button>
+          </div>
+          <div class="filter-row">
+            <input type="date" id="bill-filter-date" onchange="renderBills()">
+            <button class="btn" onclick="document.getElementById('bill-filter-date').value='';renderBills()">ล้างตัวกรอง</button>
+          </div>
+          <table class="table">
+            <thead>
+              <tr>
+                <th>วันที่</th><th>ลำดับ</th><th>พิมพ์ใบเสร็จลำดับที่</th><th>สาย</th>
+                <th>ใบแจ้งค่าไฟฟ้าเลขที่</th><th>จำนวนฉบับ</th><th>เลขกระดาษบิล เริ่ม</th>
+                <th>เลขกระดาษบิล สิ้นสุด</th><th>บิลที่ชำรุด</th><th>หมายเหตุ</th><th></th>
+              </tr>
+            </thead>
+            <tbody id="bill-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- STATS -->
+      <div class="page" id="page-stats">
+        <div class="two-col">
+          <div class="section">
+            <div class="section-header"><span class="section-title">งานแต่ละวัน (7 วันล่าสุด)</span></div>
+            <div class="chart-wrap" id="bar-chart"></div>
+          </div>
+          <div class="section">
+            <div class="section-header"><span class="section-title">สรุปสถานะงาน</span></div>
+            <div id="status-breakdown"></div>
+          </div>
+        </div>
+        <div class="section">
+          <div class="section-header"><span class="section-title">งานต่อการไฟฟ้า</span></div>
+          <div id="client-hours"></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- EDIT MODAL -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <div class="modal-title">✏️ แก้ไขรายการงาน</div>
+    <div class="form-grid">
+      <div class="form-group form-full">
+        <label>ชื่อโปรเจกต์ / ไฟล์ *</label>
+        <input type="text" id="e-project">
+      </div>
+      <div class="form-group">
+        <label>การไฟฟ้าที่แจ้งปัญหา</label>
+        <input type="text" id="e-client">
+      </div>
+      <div class="form-group">
+        <label>สถานะ</label>
+        <select id="e-status">
+          <option value="กำลังทำ">กำลังทำ</option>
+          <option value="รอตรวจ">รอตรวจ</option>
+          <option value="เสร็จแล้ว">เสร็จแล้ว</option>
+          <option value="ยกเลิก">ยกเลิก</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>วันที่เริ่มดำเนินการ</label>
+        <input type="date" id="e-date">
+      </div>
+      <div class="form-group">
+        <label>วันที่ดำเนินการเสร็จ</label>
+        <input type="date" id="e-end">
+      </div>
+      <div class="form-group form-full">
+        <label>โน้ต</label>
+        <textarea id="e-note"></textarea>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal()">ยกเลิก</button>
+      <button class="btn primary" onclick="saveEdit()">💾 บันทึก</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ====== DATA ======
+let currentUser = null;
+let logs = [];
+let bills = [];
+let parsedBills = [];
+let editId = null;
+
+const STATUS_BADGE = {
+  'กำลังทำ': 'badge-blue',
+  'รอตรวจ': 'badge-amber',
+  'เสร็จแล้ว': 'badge-green',
+  'ยกเลิก': 'badge-red'
+};
+
+// ====== ผู้ใช้ระบบ ======
+const USERS = [
+  { name: 'นายบดินทร์ เทียมทอง',       photo: 'photos/badin.jpg',       role: 'เจ้าหน้าที่' },
+  { name: 'นายสนั่น ถนอมทรัพย์กุล',    photo: 'photos/sanan.jpg',       role: 'เจ้าหน้าที่' },
+  { name: 'นายพิทยา แสงดาว',           photo: 'photos/pittaya.jpg',     role: 'เจ้าหน้าที่' },
+  { name: 'นางดาวใจ พุฒตาลดง',         photo: 'photos/daojai.jpg',      role: 'เจ้าหน้าที่' },
+  { name: 'นายอานุภาพ ชาญมะเริง',      photo: 'photos/anuphap.jpg',     role: 'เจ้าหน้าที่' },
+  { name: 'นายศุภทัติ เมืองสิม',       photo: 'photos/suphathat.jpg',   role: 'เจ้าหน้าที่' },
+  { name: 'นายเอกพงศ์ อุดมเวช',        photo: 'photos/ekkapong.jpg',    role: 'เจ้าหน้าที่' },
+  { name: 'นายจักรพงษ์ นารานฤมล',      photo: 'photos/jakkapong.jpg',   role: 'เจ้าหน้าที่' },
+  { name: 'นายวัชรดล ธีระสาสน์',       photo: 'photos/watcharadon.jpg', role: 'เจ้าหน้าที่' }
+];
+
+const AVATAR_COLORS = ['#7F77DD','#D4537E','#F0997B','#185FA5','#3B6D11','#534AB7','#ED93B1','#378ADD','#1D9E75'];
+const SLASH_COLORS  = ['#7F77DD','#D4537E','#F0997B','#378ADD','#3B6D11','#AFA9EC','#D4537E','#534AB7','#1D9E75'];
+
+function getInitial(name) {
+  const stripped = name.replace(/^(นางสาว|นาย|นาง|น\.ส\.)\s*/, '').trim();
+  return (stripped || name.trim()).charAt(0);
+}
+function getLogs(user) { return JSON.parse(localStorage.getItem('dw-logs-' + user) || '[]'); }
+function saveLogs() { localStorage.setItem('dw-logs-' + currentUser, JSON.stringify(logs)); }
+function getBills(user) { return JSON.parse(localStorage.getItem('dw-bills-' + user) || '[]'); }
+function saveBills() { localStorage.setItem('dw-bills-' + currentUser, JSON.stringify(bills)); }
+
+// ====== LOGIN ======
+function renderLoginUsers() {
+  const list = document.getElementById('user-list');
+  list.innerHTML = USERS.map((u, i) => {
+    const avatarColor = AVATAR_COLORS[i % AVATAR_COLORS.length];
+    const slashColor  = SLASH_COLORS[i % SLASH_COLORS.length];
+    const avatarHTML = u.photo
+      ? `<img src="${u.photo}" alt="${u.name}" onerror="this.parentElement.style.background='${avatarColor}';this.remove()">`
+      : getInitial(u.name);
+    const avatarStyle = u.photo ? '' : `background:${avatarColor}`;
+    const roleLabel = u.role || 'เจ้าหน้าที่';
+
+    return `
+    <div class="user-opt" onclick="selectUser(this,'${u.name}')">
+      <div class="uopt-bg-left"></div>
+      <div class="uopt-bg-right"></div>
+      <svg class="uopt-slash" viewBox="0 0 380 62" preserveAspectRatio="none">
+        <polygon points="200,0 240,0 194,62 154,62" fill="${slashColor}" opacity="0.28"/>
+        <polygon points="214,0 228,0 182,62 168,62" fill="#D4537E" opacity="0.18"/>
+        <line x1="211" y1="0" x2="165" y2="62" stroke="${slashColor}" stroke-width="1.5" opacity="0.55"/>
+      </svg>
+      <div class="uopt-inner">
+        <div class="user-opt-avatar" style="${avatarStyle}">${avatarHTML}</div>
+        <div class="uopt-info">
+          <div class="user-opt-name">${u.name}</div>
+        </div>
+        <div class="uopt-right">
+          <div class="uopt-role">${roleLabel}</div>
+          <i class="ti ti-check user-opt-check"></i>
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+let selectedUser = null;
+function selectUser(el, name) {
+  document.querySelectorAll('.user-opt').forEach(e => e.classList.remove('selected'));
+  el.classList.add('selected');
+  selectedUser = name;
+  document.getElementById('login-btn').disabled = false;
+}
+
+function doLogin() {
+  if (!selectedUser) { showToast('กรุณาเลือกผู้ใช้ก่อน'); return; }
+  currentUser = selectedUser;
+  logs = getLogs(currentUser);
+  bills = getBills(currentUser);
+  document.getElementById('loginPage').style.display = 'none';
+  document.getElementById('mainApp').style.display = 'flex';
+  document.getElementById('sidebar-name').textContent = currentUser;
+  renderSidebarAvatar();
+  renderDash();
+}
+
+function renderSidebarAvatar() {
+  const idx = USERS.findIndex(u => u.name === currentUser);
+  const u = idx >= 0 ? USERS[idx] : null;
+  const color = AVATAR_COLORS[(idx >= 0 ? idx : 0) % AVATAR_COLORS.length];
+  const el = document.getElementById('sidebar-avatar');
+  if (u && u.photo) {
+    el.style.background = '';
+    el.innerHTML = `<img src="${u.photo}" alt="${currentUser}" style="width:100%;height:100%;object-fit:cover" onerror="this.parentElement.style.background='${color}';this.remove()">`;
+  } else {
+    el.style.background = color;
+    el.innerHTML = `<span style="color:#fff;font-weight:700;font-size:12px">${getInitial(currentUser)}</span>`;
+  }
+}
+
+function logout() {
+  if (!confirm('ออกจากระบบ?')) return;
+  currentUser = null; logs = []; bills = []; selectedUser = null;
+  document.getElementById('loginPage').style.display = 'flex';
+  document.getElementById('mainApp').style.display = 'none';
+  document.querySelectorAll('.user-opt').forEach(e => e.classList.remove('selected'));
+  document.getElementById('login-btn').disabled = true;
+}
+
+// ====== PAGES ======
+function showPage(id, btn) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+  document.getElementById('page-' + id).classList.add('active');
+  if (btn) btn.classList.add('active');
+  const titles = { dashboard:'ภาพรวมการทำงาน', logs:'บันทึกงานทั้งหมด', add:'เพิ่มงานใหม่', bills:'บิลและใบแจ้งหนี้', stats:'สถิติการทำงาน' };
+  document.getElementById('pageTitle').textContent = titles[id] || '';
+  if (id === 'dashboard') renderDash();
+  if (id === 'logs') renderLogs();
+  if (id === 'bills') renderBills();
+  if (id === 'stats') renderStats();
+}
+function gotoAdd() { showPage('add', document.querySelector('.nav-item:nth-child(3)')); }
+
+// ====== DASHBOARD ======
+function renderDash() {
+  document.getElementById('s-total').textContent = logs.length;
+  document.getElementById('s-inprog').textContent = logs.filter(l => l.status === 'กำลังทำ').length;
+  document.getElementById('s-done').textContent = logs.filter(l => l.status === 'เสร็จแล้ว').length;
+  const totalBills = bills.reduce((a, b) => a + (parseInt(b.count) || 0), 0);
+  document.getElementById('s-bills').textContent = totalBills;
+  const recent = [...logs].reverse().slice(0, 5);
+  const rb = document.getElementById('recent-tbody');
+  rb.innerHTML = recent.length
+    ? recent.map(l => `<tr>
+        <td style="max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600;background:linear-gradient(135deg,#7F77DD,#D4537E,#F0997B);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">${l.project}</td>
+        <td><span class="badge ${STATUS_BADGE[l.status] || ''}">${l.status}</span></td>
+        <td style="color:#888;font-size:12px">${l.date || '-'}</td>
+      </tr>`).join('')
+    : '<tr><td colspan="3"><div class="empty-pretty">ยังไม่มีข้อมูล</div></td></tr>';
+  const clients = {};
+  logs.forEach(l => { const c = l.client || 'ไม่ระบุ'; clients[c] = (clients[c] || 0) + 1; });
+  const cs = document.getElementById('client-stats');
+  const entries = Object.entries(clients).sort((a,b) => b[1]-a[1]).slice(0,6);
+  cs.innerHTML = entries.length
+    ? entries.map(([c,n]) => `<div class="mini-stat-row"><span class="label">${c}</span><span class="value">${n} งาน</span></div>`).join('')
+    : '<div class="empty-pretty">ยังไม่มีข้อมูล</div>';
+}
+
+// ====== LOGS ======
+function renderLogs() {
+  const q = (document.getElementById('search').value || '').toLowerCase();
+  const st = document.getElementById('filterStatus').value;
+  const dt = document.getElementById('filterDate').value;
+  let filtered = logs.filter(l => {
+    if (q && !l.project.toLowerCase().includes(q) && !(l.client||'').toLowerCase().includes(q)) return false;
+    if (st && l.status !== st) return false;
+    if (dt && l.date !== dt) return false;
+    return true;
+  });
+  const tbody = document.getElementById('log-tbody');
+  tbody.innerHTML = filtered.length
+    ? [...filtered].reverse().map(l => `<tr>
+        <td style="font-weight:600;max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;background:linear-gradient(135deg,#7F77DD,#D4537E,#F0997B);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text" title="${l.project}">${l.project}</td>
+        <td style="color:#5C5277">${l.client||'-'}</td>
+        <td style="color:#888;font-size:12px;white-space:nowrap">${l.date||'-'}</td>
+        <td style="color:#888;font-size:12px;white-space:nowrap">${l.end||'-'}</td>
+        <td><span class="badge ${STATUS_BADGE[l.status]||''}">${l.status}</span></td>
+        <td style="color:#aaa;font-size:12px;max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${l.note}">${l.note||'-'}</td>
+        <td><div class="action-btns">
+          <button class="icon-btn" onclick="openEdit('${l.id}')">✏️</button>
+          <button class="icon-btn del" onclick="deleteLog('${l.id}')">🗑</button>
+        </div></td>
+      </tr>`).join('')
+    : '<tr><td colspan="7" class="empty">ไม่พบข้อมูล</td></tr>';
+}
+function clearFilters() {
+  document.getElementById('search').value='';
+  document.getElementById('filterStatus').value='';
+  document.getElementById('filterDate').value='';
+  renderLogs();
+}
+
+// ====== ADD LOG ======
+function saveLog() {
+  const project = document.getElementById('f-project').value.trim();
+  if (!project) { showToast('กรุณาใส่ชื่อโปรเจกต์'); return; }
+  const log = { id:Date.now().toString(), project,
+    client:document.getElementById('f-client').value.trim(),
+    status:document.getElementById('f-status').value,
+    date:document.getElementById('f-date').value,
+    end:document.getElementById('f-end').value,
+    note:document.getElementById('f-note').value.trim() };
+  logs.push(log); saveLogs(); clearForm();
+  showToast('บันทึกงานเรียบร้อยแล้ว ✓');
+  showPage('logs', document.querySelector('.nav-item:nth-child(2)'));
+}
+function clearForm() {
+  ['f-project','f-client','f-end','f-note'].forEach(id => document.getElementById(id).value='');
+  document.getElementById('f-status').value='กำลังทำ';
+  document.getElementById('f-date').value=new Date().toISOString().split('T')[0];
+}
+function deleteLog(id) {
+  if (!confirm('ลบรายการนี้?')) return;
+  logs=logs.filter(l=>l.id!==id); saveLogs(); renderLogs(); showToast('ลบรายการแล้ว');
+}
+
+// ====== EDIT ======
+function openEdit(id) {
+  const l = logs.find(x=>x.id===id); if(!l) return;
+  editId=id;
+  document.getElementById('e-project').value=l.project;
+  document.getElementById('e-client').value=l.client||'';
+  document.getElementById('e-status').value=l.status;
+  document.getElementById('e-date').value=l.date||'';
+  document.getElementById('e-end').value=l.end||'';
+  document.getElementById('e-note').value=l.note||'';
+  document.getElementById('modalOverlay').classList.add('open');
+}
+function closeModal() { document.getElementById('modalOverlay').classList.remove('open'); editId=null; }
+function saveEdit() {
+  const l=logs.find(x=>x.id===editId); if(!l) return;
+  const project=document.getElementById('e-project').value.trim();
+  if(!project){showToast('กรุณาใส่ชื่อโปรเจกต์');return;}
+  l.project=project; l.client=document.getElementById('e-client').value.trim();
+  l.status=document.getElementById('e-status').value; l.date=document.getElementById('e-date').value;
+  l.end=document.getElementById('e-end').value; l.note=document.getElementById('e-note').value.trim();
+  saveLogs(); closeModal(); renderLogs(); showToast('แก้ไขเรียบร้อยแล้ว ✓');
+}
+
+// ====== BILLS ======
+function parseBillPaste() {
+  const billDate=document.getElementById('bill-date').value;
+  if(!billDate){showToast('กรุณาเลือกวันที่ของรายงานก่อน');return;}
+  const paperStart=document.getElementById('bill-paper-start').value.trim();
+  const paperEnd=document.getElementById('bill-paper-end').value.trim();
+  const paperDamaged=document.getElementById('bill-paper-damaged').value.trim();
+  const raw=document.getElementById('bill-paste').value;
+  if(!raw.trim()){showToast('กรุณาวางข้อมูลก่อน');return;}
+  const lines=raw.split('\n').map(l=>l.trim()).filter(l=>l.length);
+  parsedBills=[];
+  lines.forEach(line=>{
+    const cols=line.split('\t');
+    if(cols.length<2)return;
+    parsedBills.push({date:billDate,seq:(cols[0]||'').trim(),receiptRange:(cols[1]||'').trim(),
+      line2:(cols[2]||'').trim(),billRange:(cols[3]||'').trim(),count:(cols[4]||'').trim(),
+      paperStart,paperEnd,paperDamaged,note:(cols[5]||'').trim()});
+  });
+  if(!parsedBills.length){showToast('ไม่สามารถแยกข้อมูลได้ ตรวจสอบรูปแบบที่วาง');return;}
+  const tbody=document.getElementById('bill-preview-tbody');
+  tbody.innerHTML=parsedBills.map(b=>`<tr>
+    <td>${b.seq}</td><td>${b.receiptRange}</td><td>${b.line2}</td><td>${b.billRange}</td>
+    <td>${b.count}</td><td>${b.paperStart||'-'}</td><td>${b.paperEnd||'-'}</td>
+    <td style="color:#A32D2D">${b.paperDamaged||'-'}</td><td>${b.note||'-'}</td>
+  </tr>`).join('');
+  document.getElementById('bill-preview-wrap').style.display='block';
+  const note=document.getElementById('bill-preview-note');
+  note.textContent=`ตรวจพบ ${parsedBills.length} แถว สำหรับวันที่ ${billDate} — ตรวจสอบความถูกต้องก่อนกดบันทึก`;
+  note.classList.add('show');
+}
+function cancelBillPreview(){parsedBills=[];document.getElementById('bill-preview-wrap').style.display='none';document.getElementById('bill-preview-note').classList.remove('show');}
+function confirmSaveBills(){
+  if(!parsedBills.length)return;
+  const stamp=Date.now();
+  parsedBills.forEach((b,i)=>{bills.push({id:(stamp+i).toString(),...b});});
+  saveBills(); showToast(`บันทึก ${parsedBills.length} รายการเรียบร้อยแล้ว ✓`);
+  clearBillPaste(); cancelBillPreview(); renderBills();
+}
+function clearBillPaste(){document.getElementById('bill-paste').value='';}
+function renderBills(){
+  const filterDate=document.getElementById('bill-filter-date').value;
+  const filtered=filterDate?bills.filter(b=>b.date===filterDate):bills;
+  const tbody=document.getElementById('bill-tbody');
+  tbody.innerHTML=filtered.length
+    ?[...filtered].reverse().map(b=>`<tr>
+        <td style="white-space:nowrap;color:#666">${b.date||'-'}</td><td>${b.seq}</td>
+        <td>${b.receiptRange}</td><td>${b.line2}</td><td style="font-size:12px">${b.billRange}</td>
+        <td>${b.count}</td><td style="font-size:12px">${b.paperStart||'-'}</td>
+        <td style="font-size:12px">${b.paperEnd||'-'}</td>
+        <td style="color:#A32D2D;font-size:12px">${b.paperDamaged||'-'}</td>
+        <td style="color:#aaa;font-size:12px">${b.note||'-'}</td>
+        <td><button class="icon-btn del" onclick="deleteBill('${b.id}')">🗑</button></td>
+      </tr>`).join('')
+    :'<tr><td colspan="11" class="empty">ยังไม่มีข้อมูล — วางข้อมูลจาก Excel ด้านบนเพื่อเริ่มบันทึก</td></tr>';
+}
+function deleteBill(id){if(!confirm('ลบรายการนี้?'))return;bills=bills.filter(b=>b.id!==id);saveBills();renderBills();showToast('ลบรายการแล้ว');}
+function clearAllBills(){
+  if(!bills.length)return;
+  if(!confirm('ล้างข้อมูลบิลทั้งหมด? การกระทำนี้ไม่สามารถย้อนกลับได้'))return;
+  bills=[];saveBills();renderBills();showToast('ล้างข้อมูลทั้งหมดแล้ว');
+}
+
+// ====== STATS ======
+function renderStats(){
+  const days=[];
+  for(let i=6;i>=0;i--){
+    const d=new Date(); d.setDate(d.getDate()-i);
+    const str=d.toISOString().split('T')[0];
+    const label=['อา','จ','อ','พ','พฤ','ศ','ส'][d.getDay()];
+    days.push({str,label,count:logs.filter(l=>l.date===str).length});
+  }
+  const maxC=Math.max(...days.map(d=>d.count),1);
+  document.getElementById('bar-chart').innerHTML=days.map(d=>`
+    <div class="bar-col">
+      <div class="bar-cnt">${d.count>0?d.count:''}</div>
+      <div class="bar" style="height:${Math.round((d.count/maxC)*90)}px"></div>
+      <div class="bar-lbl">${d.label}</div>
+    </div>`).join('');
+  const statusCount={};
+  logs.forEach(l=>statusCount[l.status]=(statusCount[l.status]||0)+1);
+  document.getElementById('status-breakdown').innerHTML=Object.entries(statusCount).length
+    ?Object.entries(statusCount).map(([s,n])=>`
+        <div class="mini-stat-row">
+          <span class="label"><span class="badge ${STATUS_BADGE[s]||''}">${s}</span></span>
+          <span class="value">${n} รายการ</span>
+        </div>`).join('')
+    :'<p style="color:#aaa;font-size:13px;padding:12px 0">ยังไม่มีข้อมูล</p>';
+  const ccount={};
+  logs.forEach(l=>{const c=l.client||'ไม่ระบุ';ccount[c]=(ccount[c]||0)+1;});
+  document.getElementById('client-hours').innerHTML=Object.entries(ccount).length
+    ?Object.entries(ccount).sort((a,b)=>b[1]-a[1]).map(([c,n])=>`
+        <div class="mini-stat-row"><span class="label">${c}</span><span class="value">${n} งาน</span></div>`).join('')
+    :'<p style="color:#aaa;font-size:13px;padding:12px 0">ยังไม่มีข้อมูล</p>';
+}
+
+// ====== EXPORT ======
+function exportCSV(){
+  if(!logs.length){showToast('ไม่มีข้อมูลที่จะ Export');return;}
+  const headers=['ID','ผู้ใช้','โปรเจกต์','การไฟฟ้าที่แจ้งปัญหา','สถานะ','วันที่เริ่มดำเนินการ','วันที่ดำเนินการเสร็จ','โน้ต'];
+  const rows=logs.map(l=>[l.id,currentUser,l.project,l.client||'',l.status,l.date||'',l.end||'',l.note||'']
+    .map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(','));
+  const csv='\uFEFF'+[headers.join(','),...rows].join('\n');
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));
+  a.download='dw-worklog-'+currentUser+'-'+new Date().toISOString().split('T')[0]+'.csv';
+  a.click(); showToast('Export สำเร็จ ✓');
+}
+
+// ====== TOAST ======
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2500);
+}
+
+// ====== INIT ======
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();});
+document.getElementById('f-date').value=new Date().toISOString().split('T')[0];
+document.getElementById('bill-date').value=new Date().toISOString().split('T')[0];
+renderLoginUsers();
+</script>
+</body>
+</html>
