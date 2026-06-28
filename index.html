@@ -18,10 +18,18 @@ body::before{content:'';position:fixed;bottom:0;left:0;width:100%;height:200px;b
 /* Sidebar */
 .sidebar{width:210px;background:#fff;border-right:1px solid #e8e8e4;display:flex;flex-direction:column;flex-shrink:0;position:relative;overflow:hidden;z-index:10}
 
-/* Sidebar video background */
-.sidebar-video-wrap{position:absolute;top:0;left:0;right:0;bottom:0;overflow:hidden;z-index:0;pointer-events:none}
-.sidebar-video-wrap video{width:100%;height:100%;object-fit:cover;opacity:0.55}
-.sidebar-video-wrap::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(255,255,255,0.35) 0%,rgba(253,242,246,0.25) 50%,rgba(243,232,251,0.35) 100%)}
+/* Sidebar decorative animated background (blobs + fireflies) */
+.sidebar-art{position:absolute;top:0;left:0;right:0;bottom:0;overflow:hidden;z-index:0;pointer-events:none}
+@keyframes sbDrift1{0%,100%{transform:translate(0,0) scale(1)}50%{transform:translate(14px,18px) scale(1.15)}}
+@keyframes sbDrift2{0%,100%{transform:translate(0,0) scale(1.05)}50%{transform:translate(-12px,-10px) scale(.9)}}
+@keyframes sbDrift3{0%,100%{transform:translate(0,0) scale(1);opacity:.5}50%{transform:translate(-10px,14px) scale(1.2);opacity:.8}}
+.sb-blob{position:absolute;border-radius:50%}
+.sb-blob.b1{width:110px;height:110px;top:-30px;left:-40px;background:radial-gradient(circle at 35% 35%,#A89AE8,#7F77DD 70%,transparent 100%);opacity:.5;animation:sbDrift1 10s ease-in-out infinite}
+.sb-blob.b2{width:95px;height:95px;top:230px;left:110px;background:radial-gradient(circle at 35% 35%,#ED93B1,#D4537E 70%,transparent 100%);opacity:.42;animation:sbDrift2 12s ease-in-out infinite}
+.sb-blob.b3{width:80px;height:80px;top:420px;left:-25px;background:radial-gradient(circle at 35% 35%,#F6BFA4,#F0997B 70%,transparent 100%);opacity:.42;animation:sbDrift3 9s ease-in-out infinite}
+.sb-blob.b4{width:65px;height:65px;top:90px;left:140px;background:radial-gradient(circle at 35% 35%,#F4C0D1,#ED93B1 70%,transparent 100%);opacity:.32;animation:sbDrift2 14s ease-in-out infinite}
+@keyframes sbRise{0%{transform:translate(0,0);opacity:0}12%{opacity:.9}55%{opacity:.65}90%{opacity:0}100%{transform:translate(var(--dx,8px),-100vh);opacity:0}}
+.sb-firefly{position:absolute;border-radius:50%;bottom:0;animation:sbRise linear infinite}
 .sidebar-bg{position:absolute;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none}
 .sidebar .logo,.sidebar .nav,.sidebar .user-area{position:relative;z-index:1}
 .logo{padding:20px 16px 14px;border-bottom:1px solid #e8e8e4}
@@ -272,10 +280,12 @@ body::before{content:'';position:fixed;bottom:0;left:0;width:100%;height:200px;b
 <!-- MAIN APP -->
 <div class="app" id="mainApp" style="display:none">
   <div class="sidebar">
-    <div class="sidebar-video-wrap">
-      <video autoplay muted loop playsinline>
-        <source src="bg-video.mp4" type="video/mp4">
-      </video>
+    <div class="sidebar-art">
+      <div class="sb-blob b1"></div>
+      <div class="sb-blob b2"></div>
+      <div class="sb-blob b3"></div>
+      <div class="sb-blob b4"></div>
+      <div id="sidebarFireflies"></div>
     </div>
     <svg class="sidebar-bg" viewBox="0 0 210 960" preserveAspectRatio="xMidYMid slice">
       <defs><radialGradient id="sidebarRg" cx="0.85" cy="0" r="0.6"><stop offset="0" stop-color="#EEEDFE"/><stop offset="1" stop-color="#ffffff" stop-opacity="0"/></radialGradient></defs>
@@ -747,15 +757,15 @@ function getInitial(name) {
   return (stripped || name.trim()).charAt(0);
 }
 const USERS = [
-  { name: 'นายบดินทร์ เทียมทอง',       photo: 'photos/badin.jpg',       role: 'กฟส.สุรินทร์' },
+  { name: 'นายบดินทร์ เทียมทอง',       photo: 'photos/badin.jpg',       role: 'เจ้าหน้าที่' },
   { name: 'นายสนั่น ถนอมทรัพย์กุล',    photo: 'photos/sanan.jpg',       role: 'เจ้าหน้าที่' },
   { name: 'นายพิทยา แสงดาว',           photo: 'photos/pittaya.jpg',     role: 'เจ้าหน้าที่' },
-  { name: 'นางดาวใจ พุฒตาลดง',         photo: 'photos/daojai.jpg',      role: 'กฟส.นม' },
-  { name: 'นายอานุภาพ ชาญมะเริง',      photo: 'photos/anuphap.jpg',     role: 'กฟส.นม' },
-  { name: 'นายศุภทัติ เมืองสิม',       photo: 'photos/suphathat.jpg',   role: 'กฟส.หัวทะเล' },
-  { name: 'นายเอกพงศ์ อุดมเวช',        photo: 'photos/ekkapong.jpg',    role: 'กฟส.บุรีรัมย์' },
-  { name: 'นายจักรพงษ์ นารานฤมล',      photo: 'photos/jakkapong.jpg',   role: 'กฟฉ.3' },
-  { name: 'นายวัชรดล ธีระสาสน์',       photo: 'photos/watcharadon.jpg', role: 'กฟส.นางรอง' }
+  { name: 'นางดาวใจ พุฒตาลดง',         photo: 'photos/daojai.jpg',      role: 'เจ้าหน้าที่' },
+  { name: 'นายอานุภาพ ชาญมะเริง',      photo: 'photos/anuphap.jpg',     role: 'เจ้าหน้าที่' },
+  { name: 'นายศุภทัติ เมืองสิม',       photo: 'photos/suphathat.jpg',   role: 'เจ้าหน้าที่' },
+  { name: 'นายเอกพงศ์ อุดมเวช',        photo: 'photos/ekkapong.jpg',    role: 'เจ้าหน้าที่' },
+  { name: 'นายจักรพงษ์ นารานฤมล',      photo: 'photos/jakkapong.jpg',   role: 'เจ้าหน้าที่' },
+  { name: 'นายวัชรดล ธีระสาสน์',       photo: 'photos/watcharadon.jpg', role: 'เจ้าหน้าที่' }
 ];
 
 const AVATAR_COLORS = ['#7F77DD','#D4537E','#F0997B','#185FA5','#3B6D11','#534AB7','#ED93B1','#378ADD','#1D9E75'];
@@ -1112,11 +1122,34 @@ function showToast(msg){
   setTimeout(()=>t.classList.remove('show'),2500);
 }
 
+// ====== SIDEBAR ART (fireflies) ======
+function spawnFireflies(){
+  const wrap = document.getElementById('sidebarFireflies');
+  if (!wrap) return;
+  const colors = ['#7F77DD','#D4537E','#F0997B'];
+  for (let i = 0; i < 11; i++) {
+    const dot = document.createElement('div');
+    dot.className = 'sb-firefly';
+    const size = 4 + Math.random() * 3;
+    const color = colors[i % colors.length];
+    dot.style.width = size + 'px';
+    dot.style.height = size + 'px';
+    dot.style.left = (8 + Math.random() * 185) + 'px';
+    dot.style.background = color;
+    dot.style.boxShadow = '0 0 7px 3px ' + color + '99';
+    dot.style.setProperty('--dx', (Math.random() * 30 - 15) + 'px');
+    dot.style.animationDuration = (7 + Math.random() * 6) + 's';
+    dot.style.animationDelay = (Math.random() * 8) + 's';
+    wrap.appendChild(dot);
+  }
+}
+
 // ====== INIT ======
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();});
 document.getElementById('f-date').value=new Date().toISOString().split('T')[0];
 document.getElementById('bill-date').value=new Date().toISOString().split('T')[0];
 renderLoginUsers();
+spawnFireflies();
 </script>
 </body>
 </html>
