@@ -3,6 +3,9 @@
 <head>
 	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
 	<link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Dancing+Script:wght@600&display=swap" rel="stylesheet">
+	<!-- Firebase: ทำให้ข้อมูลทุกคนเชื่อมกันแบบ real-time (ไม่ใช่ localStorage ที่อยู่แค่ในเครื่องตัวเอง) -->
+	<script src="https://www.gstatic.com/firebasejs/12.15.0/firebase-app-compat.js"></script>
+	<script src="https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore-compat.js"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Historical Knowledge Tracker</title>
@@ -361,6 +364,10 @@ body::before{content:'';position:fixed;bottom:0;left:0;width:100%;height:200px;b
     <div class="topbar">
       <div class="page-title" id="pageTitle">ภาพรวมการทำงาน</div>
       <div class="topbar-actions">
+        <span id="sync-status" style="font-size:11px;color:#aaa;display:flex;align-items:center;gap:5px;margin-right:4px">
+          <span id="sync-dot" style="width:7px;height:7px;border-radius:50%;background:#ccc;display:inline-block"></span>
+          <span id="sync-text">กำลังเชื่อมต่อ...</span>
+        </span>
         <button class="btn" onclick="exportCSV()">⬇ Export CSV</button>
         <button class="btn primary" onclick="gotoAdd()">+ เพิ่มงาน</button>
       </div>
@@ -383,7 +390,7 @@ body::before{content:'';position:fixed;bottom:0;left:0;width:100%;height:200px;b
             <div class="stat-text">
               <div class="stat-label">โปรเจกต์ทั้งหมด</div>
               <div class="stat-value c1" id="s-total">0</div>
-              <div class="stat-sub">ของฉัน</div>
+              <div class="stat-sub">ของทุกคน</div>
             </div>
           </div>
           <div class="stat-card c2">
@@ -473,6 +480,7 @@ body::before{content:'';position:fixed;bottom:0;left:0;width:100%;height:200px;b
                 <th>วันที่ดำเนินการเสร็จ</th>
                 <th>สถานะ</th>
                 <th>โน้ต</th>
+                <th>ผู้บันทึก</th>
                 <th></th>
               </tr>
             </thead>
@@ -583,7 +591,7 @@ body::before{content:'';position:fixed;bottom:0;left:0;width:100%;height:200px;b
               <tr>
                 <th>วันที่</th><th>ลำดับ</th><th>พิมพ์ใบเสร็จลำดับที่</th><th>สาย</th>
                 <th>ใบแจ้งค่าไฟฟ้าเลขที่</th><th>จำนวนฉบับ</th><th>เลขกระดาษบิล เริ่ม</th>
-                <th>เลขกระดาษบิล สิ้นสุด</th><th>บิลที่ชำรุด</th><th>หมายเหตุ</th><th></th>
+                <th>เลขกระดาษบิล สิ้นสุด</th><th>บิลที่ชำรุด</th><th>หมายเหตุ</th><th>ผู้บันทึก</th><th></th>
               </tr>
             </thead>
             <tbody id="bill-tbody"></tbody>
@@ -672,7 +680,72 @@ const STATUS_BADGE = {
   'ยกเลิก': 'badge-red'
 };
 
-// ====== ผู้ใช้ระบบ ======
+// ====== FIREBASE (ฐานข้อมูลกลาง ทุกคนเห็นข้อมูลเดียวกัน) ======
+// 1) ไปสร้างโปรเจกต์ฟรีที่ https://console.firebase.google.com
+// 2) เพิ่มเว็บแอป (ไอคอน </>) แล้วคัดลอกค่าตรงนี้มาแทนที่ของจริง
+// 3) เปิด Firestore Database แล้วตั้ง Security Rules ตามที่อธิบายไว้ในคำตอบ
+const firebaseConfig = {
+  apiKey: "YOUR_API_KEY",
+  authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+  projectId: "YOUR_PROJECT_ID",
+  storageBucket: "YOUR_PROJECT_ID.appspot.com",
+  messagingSenderId: "YOUR_SENDER_ID",
+  appId: "YOUR_APP_ID"
+};
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
+let logsUnsub = null;
+let billsUnsub = null;
+
+function setSyncStatus(state) {
+  const dot = document.getElementById('sync-dot');
+  const text = document.getElementById('sync-text');
+  if (!dot || !text) return;
+  if (state === 'connecting') { dot.style.background = '#F0C419'; text.textContent = 'กำลังเชื่อมต่อ...'; }
+  if (state === 'online')     { dot.style.background = '#3B6D11'; text.textContent = 'เชื่อมต่อแล้ว · ข้อมูลแบบ real-time'; }
+  if (state === 'error')      { dot.style.background = '#A32D2D'; text.textContent = 'เชื่อมต่อไม่ได้ ตรวจสอบ Firebase config'; }
+}
+
+// subscribeLogs/subscribeBills ฟังข้อมูลแบบ real-time จาก Firestore
+// ทุกครั้งที่มีใครบันทึก/แก้ไข/ลบ ทุกคนที่เปิดหน้านี้อยู่จะเห็นการเปลี่ยนแปลงทันทีโดยไม่ต้อง refresh
+function subscribeLogs() {
+  if (logsUnsub) logsUnsub();
+  logsUnsub = db.collection('logs').onSnapshot(
+    snapshot => {
+      logs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      logs.sort((a, b) => (a.date || '').localeCompare(b.date || ''));
+      setSyncStatus('online');
+      refreshCurrentPage();
+    },
+    err => { console.error(err); setSyncStatus('error'); showToast('โหลดข้อมูลงานไม่สำเร็จ'); }
+  );
+}
+function subscribeBills() {
+  if (billsUnsub) billsUnsub();
+  billsUnsub = db.collection('bills').onSnapshot(
+    snapshot => {
+      bills = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      bills.sort((a, b) => (a.date || '').localeCompare(b.date || ''));
+      refreshCurrentPage();
+    },
+    err => { console.error(err); showToast('โหลดข้อมูลบิลไม่สำเร็จ'); }
+  );
+}
+function refreshCurrentPage() {
+  const activePage = document.querySelector('.page.active');
+  if (!activePage) return;
+  const id = activePage.id.replace('page-', '');
+  if (id === 'dashboard') renderDash();
+  if (id === 'logs') renderLogs();
+  if (id === 'bills') renderBills();
+  if (id === 'stats') renderStats();
+}
+
+function getInitial(name) {
+  const stripped = name.replace(/^(นางสาว|นาย|นาง|น\.ส\.)\s*/, '').trim();
+  return (stripped || name.trim()).charAt(0);
+}
 const USERS = [
   { name: 'นายบดินทร์ เทียมทอง',       photo: 'photos/badin.jpg',       role: 'เจ้าหน้าที่' },
   { name: 'นายสนั่น ถนอมทรัพย์กุล',    photo: 'photos/sanan.jpg',       role: 'เจ้าหน้าที่' },
@@ -687,15 +760,6 @@ const USERS = [
 
 const AVATAR_COLORS = ['#7F77DD','#D4537E','#F0997B','#185FA5','#3B6D11','#534AB7','#ED93B1','#378ADD','#1D9E75'];
 const SLASH_COLORS  = ['#7F77DD','#D4537E','#F0997B','#378ADD','#3B6D11','#AFA9EC','#D4537E','#534AB7','#1D9E75'];
-
-function getInitial(name) {
-  const stripped = name.replace(/^(นางสาว|นาย|นาง|น\.ส\.)\s*/, '').trim();
-  return (stripped || name.trim()).charAt(0);
-}
-function getLogs(user) { return JSON.parse(localStorage.getItem('dw-logs-' + user) || '[]'); }
-function saveLogs() { localStorage.setItem('dw-logs-' + currentUser, JSON.stringify(logs)); }
-function getBills(user) { return JSON.parse(localStorage.getItem('dw-bills-' + user) || '[]'); }
-function saveBills() { localStorage.setItem('dw-bills-' + currentUser, JSON.stringify(bills)); }
 
 // ====== LOGIN ======
 function renderLoginUsers() {
@@ -743,8 +807,9 @@ function selectUser(el, name) {
 function doLogin() {
   if (!selectedUser) { showToast('กรุณาเลือกผู้ใช้ก่อน'); return; }
   currentUser = selectedUser;
-  logs = getLogs(currentUser);
-  bills = getBills(currentUser);
+  setSyncStatus('connecting');
+  subscribeLogs();
+  subscribeBills();
   document.getElementById('loginPage').style.display = 'none';
   document.getElementById('mainApp').style.display = 'flex';
   document.getElementById('sidebar-name').textContent = currentUser;
@@ -768,6 +833,8 @@ function renderSidebarAvatar() {
 
 function logout() {
   if (!confirm('ออกจากระบบ?')) return;
+  if (logsUnsub) { logsUnsub(); logsUnsub = null; }
+  if (billsUnsub) { billsUnsub(); billsUnsub = null; }
   currentUser = null; logs = []; bills = []; selectedUser = null;
   document.getElementById('loginPage').style.display = 'flex';
   document.getElementById('mainApp').style.display = 'none';
@@ -835,12 +902,13 @@ function renderLogs() {
         <td style="color:#888;font-size:12px;white-space:nowrap">${l.end||'-'}</td>
         <td><span class="badge ${STATUS_BADGE[l.status]||''}">${l.status}</span></td>
         <td style="color:#aaa;font-size:12px;max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${l.note}">${l.note||'-'}</td>
+        <td style="color:#999;font-size:12px;white-space:nowrap">${l.owner||'-'}</td>
         <td><div class="action-btns">
           <button class="icon-btn" onclick="openEdit('${l.id}')">✏️</button>
           <button class="icon-btn del" onclick="deleteLog('${l.id}')">🗑</button>
         </div></td>
       </tr>`).join('')
-    : '<tr><td colspan="7" class="empty">ไม่พบข้อมูล</td></tr>';
+    : '<tr><td colspan="8" class="empty">ไม่พบข้อมูล</td></tr>';
 }
 function clearFilters() {
   document.getElementById('search').value='';
@@ -853,15 +921,21 @@ function clearFilters() {
 function saveLog() {
   const project = document.getElementById('f-project').value.trim();
   if (!project) { showToast('กรุณาใส่ชื่อโปรเจกต์'); return; }
-  const log = { id:Date.now().toString(), project,
+  const log = { project,
     client:document.getElementById('f-client').value.trim(),
     status:document.getElementById('f-status').value,
     date:document.getElementById('f-date').value,
     end:document.getElementById('f-end').value,
-    note:document.getElementById('f-note').value.trim() };
-  logs.push(log); saveLogs(); clearForm();
-  showToast('บันทึกงานเรียบร้อยแล้ว ✓');
-  showPage('logs', document.querySelector('.nav-item:nth-child(2)'));
+    note:document.getElementById('f-note').value.trim(),
+    owner: currentUser,
+    createdAt: firebase.firestore.FieldValue.serverTimestamp() };
+  db.collection('logs').add(log)
+    .then(() => {
+      clearForm();
+      showToast('บันทึกงานเรียบร้อยแล้ว ✓');
+      showPage('logs', document.querySelector('.nav-item:nth-child(2)'));
+    })
+    .catch(err => { console.error(err); showToast('บันทึกไม่สำเร็จ ลองใหม่อีกครั้ง'); });
 }
 function clearForm() {
   ['f-project','f-client','f-end','f-note'].forEach(id => document.getElementById(id).value='');
@@ -870,7 +944,9 @@ function clearForm() {
 }
 function deleteLog(id) {
   if (!confirm('ลบรายการนี้?')) return;
-  logs=logs.filter(l=>l.id!==id); saveLogs(); renderLogs(); showToast('ลบรายการแล้ว');
+  db.collection('logs').doc(id).delete()
+    .then(() => showToast('ลบรายการแล้ว'))
+    .catch(err => { console.error(err); showToast('ลบไม่สำเร็จ'); });
 }
 
 // ====== EDIT ======
@@ -887,13 +963,21 @@ function openEdit(id) {
 }
 function closeModal() { document.getElementById('modalOverlay').classList.remove('open'); editId=null; }
 function saveEdit() {
-  const l=logs.find(x=>x.id===editId); if(!l) return;
+  if (!editId) return;
   const project=document.getElementById('e-project').value.trim();
   if(!project){showToast('กรุณาใส่ชื่อโปรเจกต์');return;}
-  l.project=project; l.client=document.getElementById('e-client').value.trim();
-  l.status=document.getElementById('e-status').value; l.date=document.getElementById('e-date').value;
-  l.end=document.getElementById('e-end').value; l.note=document.getElementById('e-note').value.trim();
-  saveLogs(); closeModal(); renderLogs(); showToast('แก้ไขเรียบร้อยแล้ว ✓');
+  const updates = {
+    project,
+    client:document.getElementById('e-client').value.trim(),
+    status:document.getElementById('e-status').value,
+    date:document.getElementById('e-date').value,
+    end:document.getElementById('e-end').value,
+    note:document.getElementById('e-note').value.trim(),
+    lastEditedBy: currentUser
+  };
+  db.collection('logs').doc(editId).update(updates)
+    .then(() => { closeModal(); showToast('แก้ไขเรียบร้อยแล้ว ✓'); })
+    .catch(err => { console.error(err); showToast('แก้ไขไม่สำเร็จ'); });
 }
 
 // ====== BILLS ======
@@ -929,10 +1013,17 @@ function parseBillPaste() {
 function cancelBillPreview(){parsedBills=[];document.getElementById('bill-preview-wrap').style.display='none';document.getElementById('bill-preview-note').classList.remove('show');}
 function confirmSaveBills(){
   if(!parsedBills.length)return;
-  const stamp=Date.now();
-  parsedBills.forEach((b,i)=>{bills.push({id:(stamp+i).toString(),...b});});
-  saveBills(); showToast(`บันทึก ${parsedBills.length} รายการเรียบร้อยแล้ว ✓`);
-  clearBillPaste(); cancelBillPreview(); renderBills();
+  const batch = db.batch();
+  parsedBills.forEach(b => {
+    const ref = db.collection('bills').doc();
+    batch.set(ref, { ...b, owner: currentUser, createdAt: firebase.firestore.FieldValue.serverTimestamp() });
+  });
+  batch.commit()
+    .then(() => {
+      showToast(`บันทึก ${parsedBills.length} รายการเรียบร้อยแล้ว ✓`);
+      clearBillPaste(); cancelBillPreview();
+    })
+    .catch(err => { console.error(err); showToast('บันทึกไม่สำเร็จ ลองใหม่อีกครั้ง'); });
 }
 function clearBillPaste(){document.getElementById('bill-paste').value='';}
 function renderBills(){
@@ -947,15 +1038,25 @@ function renderBills(){
         <td style="font-size:12px">${b.paperEnd||'-'}</td>
         <td style="color:#A32D2D;font-size:12px">${b.paperDamaged||'-'}</td>
         <td style="color:#aaa;font-size:12px">${b.note||'-'}</td>
+        <td style="color:#999;font-size:12px;white-space:nowrap">${b.owner||'-'}</td>
         <td><button class="icon-btn del" onclick="deleteBill('${b.id}')">🗑</button></td>
       </tr>`).join('')
-    :'<tr><td colspan="11" class="empty">ยังไม่มีข้อมูล — วางข้อมูลจาก Excel ด้านบนเพื่อเริ่มบันทึก</td></tr>';
+    :'<tr><td colspan="12" class="empty">ยังไม่มีข้อมูล — วางข้อมูลจาก Excel ด้านบนเพื่อเริ่มบันทึก</td></tr>';
 }
-function deleteBill(id){if(!confirm('ลบรายการนี้?'))return;bills=bills.filter(b=>b.id!==id);saveBills();renderBills();showToast('ลบรายการแล้ว');}
+function deleteBill(id){
+  if(!confirm('ลบรายการนี้?'))return;
+  db.collection('bills').doc(id).delete()
+    .then(() => showToast('ลบรายการแล้ว'))
+    .catch(err => { console.error(err); showToast('ลบไม่สำเร็จ'); });
+}
 function clearAllBills(){
   if(!bills.length)return;
-  if(!confirm('ล้างข้อมูลบิลทั้งหมด? การกระทำนี้ไม่สามารถย้อนกลับได้'))return;
-  bills=[];saveBills();renderBills();showToast('ล้างข้อมูลทั้งหมดแล้ว');
+  if(!confirm('ล้างข้อมูลบิลทั้งหมด? การกระทำนี้ไม่สามารถย้อนกลับได้ (ลบของทุกคน)'))return;
+  const batch = db.batch();
+  bills.forEach(b => batch.delete(db.collection('bills').doc(b.id)));
+  batch.commit()
+    .then(() => showToast('ล้างข้อมูลทั้งหมดแล้ว'))
+    .catch(err => { console.error(err); showToast('ล้างข้อมูลไม่สำเร็จ'); });
 }
 
 // ====== STATS ======
@@ -994,13 +1095,13 @@ function renderStats(){
 // ====== EXPORT ======
 function exportCSV(){
   if(!logs.length){showToast('ไม่มีข้อมูลที่จะ Export');return;}
-  const headers=['ID','ผู้ใช้','โปรเจกต์','การไฟฟ้าที่แจ้งปัญหา','สถานะ','วันที่เริ่มดำเนินการ','วันที่ดำเนินการเสร็จ','โน้ต'];
-  const rows=logs.map(l=>[l.id,currentUser,l.project,l.client||'',l.status,l.date||'',l.end||'',l.note||'']
+  const headers=['ID','ผู้บันทึก','โปรเจกต์','การไฟฟ้าที่แจ้งปัญหา','สถานะ','วันที่เริ่มดำเนินการ','วันที่ดำเนินการเสร็จ','โน้ต'];
+  const rows=logs.map(l=>[l.id,l.owner||'',l.project,l.client||'',l.status,l.date||'',l.end||'',l.note||'']
     .map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(','));
   const csv='\uFEFF'+[headers.join(','),...rows].join('\n');
   const a=document.createElement('a');
   a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));
-  a.download='dw-worklog-'+currentUser+'-'+new Date().toISOString().split('T')[0]+'.csv';
+  a.download='dw-worklog-'+new Date().toISOString().split('T')[0]+'.csv';
   a.click(); showToast('Export สำเร็จ ✓');
 }
 
