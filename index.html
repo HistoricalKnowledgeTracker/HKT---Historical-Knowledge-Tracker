@@ -130,6 +130,14 @@ body::before{content:'';position:fixed;bottom:0;left:0;width:100%;height:200px;b
 .mini-stat-row:last-child{border-bottom:none}
 .mini-stat-row .label{color:#666}
 .mini-stat-row .value{font-weight:600;color:#1a1a1a}
+#client-stats .mini-stat-row .label,
+#client-stats .mini-stat-row .value,
+#client-hours .mini-stat-row .label,
+#client-hours .mini-stat-row .value{
+  background:linear-gradient(135deg,#7F77DD,#D4537E,#F0997B);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  font-weight:700;
+}
 
 /* Bar chart */
 .chart-wrap{display:flex;align-items:flex-end;gap:6px;height:120px;padding:4px 0}
@@ -159,6 +167,15 @@ body::before{content:'';position:fixed;bottom:0;left:0;width:100%;height:200px;b
 .icon-btn:hover{background:#f5f5f0}
 .icon-btn.del{color:#A32D2D}
 .icon-btn.del:hover{background:#FCEBEB;border-color:#F7C1C1}
+.icon-btn:disabled{opacity:.3;cursor:not-allowed}
+.icon-btn:disabled:hover{background:#fff}
+
+/* Month navigator */
+.month-nav{display:flex;align-items:center;gap:2px;margin-right:6px;background:#faf9f7;border:1px solid #ececea;border-radius:8px;padding:3px}
+.month-nav .icon-btn{border:none;background:transparent;padding:5px 7px}
+.month-nav .icon-btn:hover{background:#eee}
+.month-nav-label{font-size:12.5px;font-weight:700;min-width:104px;text-align:center;background:linear-gradient(135deg,#7F77DD,#D4537E);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;padding:0 2px}
+.month-nav .btn{font-size:11px;padding:5px 10px;height:auto;border-radius:6px}
 
 /* Paste area */
 .paste-area{width:100%;min-height:120px;font-family:'Consolas',monospace;font-size:12px;padding:10px;border-radius:8px;border:1px dashed #c9a8c2;background:#fdf9fb;resize:vertical}
@@ -358,11 +375,17 @@ body::before{content:'';position:fixed;bottom:0;left:0;width:100%;height:200px;b
     <div class="topbar">
       <div class="page-title" id="pageTitle">ภาพรวมการทำงาน</div>
       <div class="topbar-actions">
+        <div class="month-nav" id="monthNav">
+          <button class="icon-btn" onclick="changeMonth(-1)" title="เดือนก่อนหน้า"><i class="ti ti-chevron-left"></i></button>
+          <span class="month-nav-label" id="monthLabel">-</span>
+          <button class="icon-btn" id="monthNextBtn" onclick="changeMonth(1)" title="เดือนถัดไป"><i class="ti ti-chevron-right"></i></button>
+          <button class="btn" onclick="goToCurrentMonth()" title="กลับไปเดือนนี้">เดือนนี้</button>
+        </div>
         <span id="sync-status" style="font-size:11px;color:#aaa;display:flex;align-items:center;gap:5px;margin-right:4px">
           <span id="sync-dot" style="width:7px;height:7px;border-radius:50%;background:#ccc;display:inline-block"></span>
           <span id="sync-text">กำลังเชื่อมต่อ...</span>
         </span>
-        <button class="btn" onclick="exportCSV()">⬇ Export CSV</button>
+        <button class="btn primary" onclick="gotoBills()">จัดการบิล</button>
         <button class="btn primary" onclick="gotoAdd()">+ เพิ่มงาน</button>
       </div>
     </div>
@@ -744,6 +767,33 @@ let logs = [];
 let bills = [];
 let editId = null;
 
+// ====== MONTH SELECTOR ======
+let selectedMonth = new Date().toISOString().slice(0,7); // 'YYYY-MM'
+const THAI_MONTHS = ['มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน','กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'];
+
+function isInSelectedMonth(dateStr) {
+  return !!dateStr && dateStr.slice(0,7) === selectedMonth;
+}
+function updateMonthLabel() {
+  const [y, m] = selectedMonth.split('-').map(Number);
+  const label = document.getElementById('monthLabel');
+  if (label) label.textContent = THAI_MONTHS[m-1] + ' ' + (y + 543);
+  const nextBtn = document.getElementById('monthNextBtn');
+  if (nextBtn) nextBtn.disabled = selectedMonth >= new Date().toISOString().slice(0,7);
+}
+function changeMonth(delta) {
+  const [y, m] = selectedMonth.split('-').map(Number);
+  const d = new Date(y, m - 1 + delta, 1);
+  selectedMonth = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0');
+  updateMonthLabel();
+  refreshCurrentPage();
+}
+function goToCurrentMonth() {
+  selectedMonth = new Date().toISOString().slice(0,7);
+  updateMonthLabel();
+  refreshCurrentPage();
+}
+
 const STATUS_BADGE = {
   'กำลังทำ': 'badge-blue',
   'รอตรวจ': 'badge-amber',
@@ -829,7 +879,10 @@ const USERS = [
   { name: 'นายศุภทัติ เมืองสิม',       photo: 'photos/suphathat.jpg',   role: 'กฟส.หัวทะเล', password: 'pea006' },
   { name: 'นายเอกพงศ์ อุดมเวช',        photo: 'photos/ekkapong.jpg',    role: 'กฟจ.บุรีรัมย์', password: 'pea007' },
   { name: 'นายจักรพงษ์ นารานฤมล',      photo: 'photos/jakkapong.jpg',   role: 'กฟฉ.3', password: 'bam' },
-  { name: 'นายวัชรดล ธีระสาสน์',       photo: 'photos/watcharadon.jpg', role: 'กฟส.นางรอง', password: '61429721632g' }
+  { name: 'นายวัชรดล ธีระสาสน์',       photo: 'photos/watcharadon.jpg', role: 'กฟส.นางรอง', password: '61429721632g' },
+  { name: 'นายสมชาย ใจดี',             photo: '',                       role: 'กฟส.ตัวอย่าง 1', password: 'pea008' },
+  { name: 'นางสาวสมหญิง แสนสุข',       photo: '',                       role: 'กฟส.ตัวอย่าง 2', password: 'pea009' },
+  { name: 'นายสมศักดิ์ มั่งมี',         photo: '',                       role: 'กฟส.ตัวอย่าง 3', password: 'pea010' }
 ];
 
 function isCurrentUserAdmin() {
@@ -964,22 +1017,26 @@ function showPage(id, btn) {
   if (btn) btn.classList.add('active');
   const titles = { dashboard:'ภาพรวมการทำงาน', logs:'บันทึกงานทั้งหมด', add:'เพิ่มงานใหม่', bills:'บิลและใบแจ้งหนี้', stats:'สถิติการทำงาน' };
   document.getElementById('pageTitle').textContent = titles[id] || '';
+  document.getElementById('monthNav').style.display = (id === 'add') ? 'none' : 'flex';
   if (id === 'dashboard') renderDash();
   if (id === 'logs') renderLogs();
   if (id === 'bills') renderBills();
   if (id === 'stats') renderStats();
 }
 function gotoAdd() { showPage('add', document.querySelector('.nav-item:nth-child(3)')); }
+function gotoBills() { showPage('bills', document.querySelector('.nav-item:nth-child(4)')); }
 
 // ====== DASHBOARD ======
 function renderDash() {
-  document.getElementById('s-total').textContent = logs.length;
-  document.getElementById('s-total-sub').textContent = isCurrentUserAdmin() ? 'ของทุกคน' : 'ของฉัน';
-  document.getElementById('s-inprog').textContent = logs.filter(l => l.status === 'กำลังทำ').length;
-  document.getElementById('s-done').textContent = logs.filter(l => l.status === 'เสร็จแล้ว').length;
-  const totalCopies = bills.reduce((a, b) => a + (parseInt(b.totalCount) || 0), 0);
+  const monthLogs = logs.filter(l => isInSelectedMonth(l.date));
+  const monthBills = bills.filter(b => isInSelectedMonth(b.date));
+  document.getElementById('s-total').textContent = monthLogs.length;
+  document.getElementById('s-total-sub').textContent = (isCurrentUserAdmin() ? 'ของทุกคน' : 'ของฉัน') + ' · เดือนนี้';
+  document.getElementById('s-inprog').textContent = monthLogs.filter(l => l.status === 'กำลังทำ').length;
+  document.getElementById('s-done').textContent = monthLogs.filter(l => l.status === 'เสร็จแล้ว').length;
+  const totalCopies = monthBills.reduce((a, b) => a + (parseInt(b.totalCount) || 0), 0);
   document.getElementById('s-bills').textContent = totalCopies;
-  const recent = [...logs].reverse().slice(0, 5);
+  const recent = [...monthLogs].reverse().slice(0, 5);
   const rb = document.getElementById('recent-tbody');
   rb.innerHTML = recent.length
     ? recent.map(l => `<tr>
@@ -987,14 +1044,14 @@ function renderDash() {
         <td><span class="badge ${STATUS_BADGE[l.status] || ''}">${l.status}</span></td>
         <td style="color:#888;font-size:12px">${l.date || '-'}</td>
       </tr>`).join('')
-    : '<tr><td colspan="3"><div class="empty-pretty">ยังไม่มีข้อมูล</div></td></tr>';
+    : '<tr><td colspan="3"><div class="empty-pretty">ยังไม่มีข้อมูลในเดือนนี้</div></td></tr>';
   const clients = {};
-  logs.forEach(l => { const c = l.client || 'ไม่ระบุ'; clients[c] = (clients[c] || 0) + 1; });
+  monthLogs.forEach(l => { const c = l.client || 'ไม่ระบุ'; clients[c] = (clients[c] || 0) + 1; });
   const cs = document.getElementById('client-stats');
   const entries = Object.entries(clients).sort((a,b) => b[1]-a[1]).slice(0,6);
   cs.innerHTML = entries.length
     ? entries.map(([c,n]) => `<div class="mini-stat-row"><span class="label">${c}</span><span class="value">${n} งาน</span></div>`).join('')
-    : '<div class="empty-pretty">ยังไม่มีข้อมูล</div>';
+    : '<div class="empty-pretty">ยังไม่มีข้อมูลในเดือนนี้</div>';
 }
 
 // ====== LOGS ======
@@ -1004,6 +1061,7 @@ function renderLogs() {
   const dt = document.getElementById('filterDate').value;
   const ow = isCurrentUserAdmin() ? document.getElementById('filterOwner').value : '';
   let filtered = logs.filter(l => {
+    if (!isInSelectedMonth(l.date)) return false;
     if (q && !l.project.toLowerCase().includes(q) && !(l.client||'').toLowerCase().includes(q)) return false;
     if (st && l.status !== st) return false;
     if (dt && l.date !== dt) return false;
@@ -1025,7 +1083,7 @@ function renderLogs() {
           <button class="icon-btn del" onclick="deleteLog('${l.id}')">🗑</button>
         </div></td>
       </tr>`).join('')
-    : '<tr><td colspan="8" class="empty">ไม่พบข้อมูล</td></tr>';
+    : '<tr><td colspan="8" class="empty">ไม่พบข้อมูลในเดือนนี้</td></tr>';
 }
 function clearFilters() {
   document.getElementById('search').value='';
@@ -1305,6 +1363,7 @@ function renderBills() {
   const filterDate  = document.getElementById('bill-filter-date').value;
   const filterOwner = isCurrentUserAdmin() ? document.getElementById('bill-filter-owner').value : '';
   const filtered    = bills.filter(b => {
+    if (!isInSelectedMonth(b.date)) return false;
     if (filterDate && b.date !== filterDate) return false;
     if (filterOwner && b.owner !== filterOwner) return false;
     return true;
@@ -1322,7 +1381,7 @@ function renderBills() {
         <td style="color:#999;font-size:12px;white-space:nowrap">${b.owner||'-'}</td>
         <td><button class="icon-btn del" onclick="deleteBill('${b.id}')">🗑</button></td>
       </tr>`).join('')
-    : '<tr><td colspan="9" class="empty">ยังไม่มีข้อมูล — บันทึกสรุปบิลจากฟอร์มด้านบน</td></tr>';
+    : '<tr><td colspan="9" class="empty">ยังไม่มีข้อมูลในเดือนนี้ — บันทึกสรุปบิลจากฟอร์มด้านบน</td></tr>';
 }
 
 function deleteBill(id) {
@@ -1357,21 +1416,22 @@ function renderStats() {
       <div class="bar" style="height:${Math.round((d.count/maxC)*90)}px"></div>
       <div class="bar-lbl">${d.label}</div>
     </div>`).join('');
+  const monthLogs = logs.filter(l => isInSelectedMonth(l.date));
   const statusCount = {};
-  logs.forEach(l => statusCount[l.status] = (statusCount[l.status] || 0) + 1);
+  monthLogs.forEach(l => statusCount[l.status] = (statusCount[l.status] || 0) + 1);
   document.getElementById('status-breakdown').innerHTML = Object.entries(statusCount).length
     ? Object.entries(statusCount).map(([s,n]) => `
         <div class="mini-stat-row">
           <span class="label"><span class="badge ${STATUS_BADGE[s]||''}">${s}</span></span>
           <span class="value">${n} รายการ</span>
         </div>`).join('')
-    : '<p style="color:#aaa;font-size:13px;padding:12px 0">ยังไม่มีข้อมูล</p>';
+    : '<p style="color:#aaa;font-size:13px;padding:12px 0">ยังไม่มีข้อมูลในเดือนนี้</p>';
   const ccount = {};
-  logs.forEach(l => { const c = l.client || 'ไม่ระบุ'; ccount[c] = (ccount[c] || 0) + 1; });
+  monthLogs.forEach(l => { const c = l.client || 'ไม่ระบุ'; ccount[c] = (ccount[c] || 0) + 1; });
   document.getElementById('client-hours').innerHTML = Object.entries(ccount).length
     ? Object.entries(ccount).sort((a,b) => b[1]-a[1]).map(([c,n]) => `
         <div class="mini-stat-row"><span class="label">${c}</span><span class="value">${n} งาน</span></div>`).join('')
-    : '<p style="color:#aaa;font-size:13px;padding:12px 0">ยังไม่มีข้อมูล</p>';
+    : '<p style="color:#aaa;font-size:13px;padding:12px 0">ยังไม่มีข้อมูลในเดือนนี้</p>';
 }
 
 // ====== EXPORT ======
@@ -1423,6 +1483,7 @@ document.getElementById('f-date').value = new Date().toISOString().split('T')[0]
 document.getElementById('bill-date').value = new Date().toISOString().split('T')[0];
 renderLoginUsers();
 spawnFireflies();
+updateMonthLabel();
 
 const savedUser = sessionStorage.getItem('hkt_user');
 if (savedUser && USERS.find(u => u.name === savedUser)) {
