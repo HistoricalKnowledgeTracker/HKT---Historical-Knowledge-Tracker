@@ -152,13 +152,26 @@ body::before{content:'';position:fixed;bottom:0;left:0;width:100%;height:200px;b
 .icon-btn.del:hover{background:#FCEBEB;border-color:#F7C1C1}
 
 /* Paste area */
-.paste-area{width:100%;min-height:140px;font-family:'Consolas',monospace;font-size:12px;padding:10px;border-radius:8px;border:1px dashed #c9a8c2;background:#fdf9fb;resize:vertical}
+.paste-area{width:100%;min-height:120px;font-family:'Consolas',monospace;font-size:12px;padding:10px;border-radius:8px;border:1px dashed #c9a8c2;background:#fdf9fb;resize:vertical}
 .paste-area:focus{outline:none;border-color:#D4537E;background:#fff}
 .paste-hint{font-size:11px;color:#aaa;margin-top:6px}
+
+/* ── Bill summary card ── */
+.bill-summary-card{background:linear-gradient(135deg,#fdf2f6,#f3e8fb);border:1.5px solid #e8d4f0;border-radius:12px;padding:16px 20px;margin-top:16px}
+.bill-summary-title{font-size:12px;font-weight:600;color:#7F77DD;letter-spacing:.5px;text-transform:uppercase;margin-bottom:12px;display:flex;align-items:center;gap:6px}
+.bill-summary-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.bill-sum-item{background:#fff;border:1px solid #e8e8e4;border-radius:8px;padding:10px 14px;text-align:center}
+.bill-sum-label{font-size:11px;color:#999;margin-bottom:4px}
+.bill-sum-value{font-size:20px;font-weight:700;background:linear-gradient(135deg,#7F77DD,#D4537E);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.bill-sum-sub{font-size:10px;color:#bbb;margin-top:2px}
+.bill-damaged-list{margin-top:10px;font-size:12px;color:#A32D2D;background:#FCEBEB;padding:8px 12px;border-radius:7px;display:none}
+.bill-damaged-list.show{display:block}
+
+/* ── preview note ── */
 .preview-note{font-size:12px;color:#7F77DD;background:#F3E8FB;padding:8px 12px;border-radius:8px;margin-bottom:10px;display:none}
 .preview-note.show{display:block}
 
-/* ========== LOGIN PAGE ========== */
+/* ====== LOGIN PAGE ====== */
 .login-wrap{display:flex;align-items:center;justify-content:center;min-height:100vh;background:transparent;position:relative;z-index:1;padding:24px}
 .login-box{background:linear-gradient(160deg,#ffffff,#fdf2f6 55%,#f3e8fb);border:1px solid #e8e8e4;border-radius:22px;padding:32px 34px;width:680px;max-width:94vw;max-height:92vh;overflow-y:auto;position:relative;box-shadow:0 24px 60px -16px rgba(124,77,255,0.28)}
 .login-bubbles{position:absolute;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none}
@@ -387,9 +400,9 @@ body::before{content:'';position:fixed;bottom:0;left:0;width:100%;height:200px;b
               </circle>
             </svg>
             <div class="stat-text">
-              <div class="stat-label">ใบแจ้งหนี้ทั้งหมด</div>
+              <div class="stat-label">จำนวนฉบับรวม (บิล)</div>
               <div class="stat-value c4" id="s-bills">0</div>
-              <div class="stat-sub">ฉบับ</div>
+              <div class="stat-sub">ฉบับ (รวมทุกวัน)</div>
             </div>
           </div>
         </div>
@@ -485,12 +498,63 @@ body::before{content:'';position:fixed;bottom:0;left:0;width:100%;height:200px;b
 
       <!-- BILLS / INVOICES -->
       <div class="page" id="page-bills">
+
+        <!-- ── ขั้นที่ 1: วางข้อมูล Excel เพื่อคำนวณ ── -->
         <div class="section">
-          <div class="section-header"><span class="section-title"><i class="ti ti-clipboard-text"></i>วางข้อมูลจาก Excel / BPM</span></div>
-          <div class="form-grid" style="margin-bottom:14px">
+          <div class="section-header"><span class="section-title"><i class="ti ti-clipboard-text"></i>วางข้อมูลจาก Excel เพื่อคำนวณสรุป</span></div>
+          <p style="font-size:12px;color:#888;margin-bottom:10px">คัดลอกตารางจาก Excel แล้ววางที่นี่ — ระบบจะนับจำนวนสายและรวมจำนวนฉบับให้อัตโนมัติ</p>
+          <textarea class="paste-area" id="bill-paste" placeholder="วางข้อมูลที่คัดลอกจาก Excel ที่นี่...&#10;(รูปแบบ: ลำดับ TAB พิมพ์ใบเสร็จลำดับที่ TAB สาย TAB ใบแจ้งค่าไฟฟ้าเลขที่ TAB จำนวนฉบับ TAB หมายเหตุ)"></textarea>
+          <div class="paste-hint">วางข้อมูลคั่นด้วย Tab ตรงจาก Excel — ระบบจะนับสายและรวมฉบับให้ทันที</div>
+          <div style="margin-top:10px;display:flex;gap:8px">
+            <button class="btn primary" onclick="calcBillSummary()"><i class="ti ti-calculator"></i> คำนวณสรุป</button>
+            <button class="btn" onclick="clearBillPaste()">✕ ล้าง</button>
+          </div>
+
+          <!-- ผลการคำนวณ -->
+          <div class="bill-summary-card" id="bill-calc-result" style="display:none">
+            <div class="bill-summary-title"><i class="ti ti-chart-bar"></i> ผลการคำนวณจากข้อมูลที่วาง</div>
+            <div class="bill-summary-grid">
+              <div class="bill-sum-item">
+                <div class="bill-sum-label">จำนวนสายทั้งหมด</div>
+                <div class="bill-sum-value" id="calc-routes">0</div>
+                <div class="bill-sum-sub">สาย</div>
+              </div>
+              <div class="bill-sum-item">
+                <div class="bill-sum-label">จำนวนฉบับทั้งหมด</div>
+                <div class="bill-sum-value" id="calc-count">0</div>
+                <div class="bill-sum-sub">ฉบับ</div>
+              </div>
+              <div class="bill-sum-item">
+                <div class="bill-sum-label">แถวข้อมูล</div>
+                <div class="bill-sum-value" id="calc-rows">0</div>
+                <div class="bill-sum-sub">แถว</div>
+              </div>
+              <div class="bill-sum-item">
+                <div class="bill-sum-label">หมายเหตุ</div>
+                <div class="bill-sum-value" id="calc-notes">-</div>
+                <div class="bill-sum-sub">รายการที่มีหมายเหตุ</div>
+              </div>
+            </div>
+            <div id="bill-calc-damaged-wrap" class="bill-damaged-list"></div>
+            <p style="font-size:11px;color:#888;margin-top:10px">✓ ตัวเลขด้านบนถูกกรอกลงในฟอร์มบันทึกด้านล่างให้แล้ว — ตรวจสอบและแก้ไขก่อนกดบันทึก</p>
+          </div>
+        </div>
+
+        <!-- ── ขั้นที่ 2: กรอกข้อมูลและบันทึกสรุปประจำวัน ── -->
+        <div class="section">
+          <div class="section-header"><span class="section-title"><i class="ti ti-file-plus"></i>บันทึกสรุปบิลประจำวัน</span></div>
+          <div class="form-grid">
             <div class="form-group">
-              <label>วันที่ของรายงานนี้</label>
+              <label>วันที่ของรายงาน *</label>
               <input type="date" id="bill-date">
+            </div>
+            <div class="form-group">
+              <label>จำนวนสายทั้งหมด *</label>
+              <input type="number" id="bill-routes" placeholder="0" min="0">
+            </div>
+            <div class="form-group">
+              <label>จำนวนฉบับทั้งหมด *</label>
+              <input type="number" id="bill-total-count" placeholder="0" min="0">
             </div>
             <div class="form-group">
               <label>หมายเลขกระดาษบิล — เริ่ม</label>
@@ -504,34 +568,21 @@ body::before{content:'';position:fixed;bottom:0;left:0;width:100%;height:200px;b
               <label>บิลที่ชำรุด</label>
               <input type="text" id="bill-paper-damaged" placeholder="เช่น A00268750, A00268760">
             </div>
-          </div>
-          <p style="font-size:12px;color:#888;margin-bottom:8px">คัดลอกตารางจาก Excel (คอลัมน์: ลำดับ, พิมพ์ใบเสร็จลำดับที่, สาย, ใบแจ้งค่าไฟฟ้าเลขที่, จำนวนฉบับ, หมายเหตุ) แล้ววางที่นี่</p>
-          <textarea class="paste-area" id="bill-paste" placeholder="วางข้อมูลที่คัดลอกจาก Excel ที่นี่..."></textarea>
-          <div class="paste-hint">วางข้อมูลแบบคั่นด้วย Tab (คัดลอกตรงจาก Excel ได้เลย) ระบบจะแยกแถวให้อัตโนมัติ</div>
-          <div style="margin-top:12px;display:flex;gap:8px">
-            <button class="btn primary" onclick="parseBillPaste()"><i class="ti ti-wand"></i> แยกข้อมูล</button>
-            <button class="btn" onclick="clearBillPaste()">✕ ล้างข้อมูลที่วาง</button>
-          </div>
-          <div class="preview-note" id="bill-preview-note"></div>
-          <div id="bill-preview-wrap" style="display:none;margin-top:14px">
-            <table class="table" id="bill-preview-table">
-              <thead>
-                <tr>
-                  <th>ลำดับ</th><th>พิมพ์ใบเสร็จลำดับที่</th><th>สาย</th><th>ใบแจ้งค่าไฟฟ้าเลขที่</th>
-                  <th>จำนวนฉบับ</th><th>เลขกระดาษบิล เริ่ม</th><th>เลขกระดาษบิล สิ้นสุด</th><th>บิลที่ชำรุด</th><th>หมายเหตุ</th>
-                </tr>
-              </thead>
-              <tbody id="bill-preview-tbody"></tbody>
-            </table>
-            <div style="margin-top:12px;display:flex;gap:8px">
-              <button class="btn primary" onclick="confirmSaveBills()"><i class="ti ti-check"></i> บันทึกทั้งหมด</button>
-              <button class="btn" onclick="cancelBillPreview()">✕ ยกเลิก</button>
+            <div class="form-group form-full">
+              <label>หมายเหตุเพิ่มเติม</label>
+              <input type="text" id="bill-note" placeholder="หมายเหตุ (ถ้ามี)">
             </div>
           </div>
+          <div style="margin-top:14px;display:flex;gap:8px">
+            <button class="btn primary" onclick="saveBillSummary()"><i class="ti ti-device-floppy"></i> บันทึกสรุปวันนี้</button>
+            <button class="btn" onclick="clearBillForm()">✕ ล้างฟอร์ม</button>
+          </div>
         </div>
+
+        <!-- ── รายการที่บันทึกไว้ ── -->
         <div class="section">
           <div class="section-header">
-            <span class="section-title"><i class="ti ti-file-invoice"></i>รายการที่บันทึกไว้</span>
+            <span class="section-title"><i class="ti ti-file-invoice"></i>ประวัติสรุปบิลที่บันทึกไว้</span>
             <button class="icon-btn del" onclick="clearAllBills()"><i class="ti ti-trash"></i> ล้างทั้งหมด</button>
           </div>
           <div class="filter-row">
@@ -541,9 +592,15 @@ body::before{content:'';position:fixed;bottom:0;left:0;width:100%;height:200px;b
           <table class="table">
             <thead>
               <tr>
-                <th>วันที่</th><th>ลำดับ</th><th>พิมพ์ใบเสร็จลำดับที่</th><th>สาย</th>
-                <th>ใบแจ้งค่าไฟฟ้าเลขที่</th><th>จำนวนฉบับ</th><th>เลขกระดาษบิล เริ่ม</th>
-                <th>เลขกระดาษบิล สิ้นสุด</th><th>บิลที่ชำรุด</th><th>หมายเหตุ</th><th>ผู้บันทึก</th><th></th>
+                <th>วันที่</th>
+                <th>จำนวนสาย</th>
+                <th>จำนวนฉบับ</th>
+                <th>เลขบิลเริ่ม</th>
+                <th>เลขบิลสิ้นสุด</th>
+                <th>บิลชำรุด</th>
+                <th>หมายเหตุ</th>
+                <th>ผู้บันทึก</th>
+                <th></th>
               </tr>
             </thead>
             <tbody id="bill-tbody"></tbody>
@@ -622,7 +679,6 @@ body::before{content:'';position:fixed;bottom:0;left:0;width:100%;height:200px;b
 let currentUser = null;
 let logs = [];
 let bills = [];
-let parsedBills = [];
 let editId = null;
 
 const STATUS_BADGE = {
@@ -720,7 +776,6 @@ function renderLoginUsers() {
       : getInitial(u.name);
     const avatarStyle = u.photo ? '' : `background:${avatarColor}`;
     const roleLabel = u.role || 'เจ้าหน้าที่';
-
     return `
     <div class="user-opt" onclick="selectUser(this,'${u.name}')">
       <div class="uopt-bg-left"></div>
@@ -767,9 +822,7 @@ function doLogin() {
     document.getElementById('login-password').focus();
     return;
   }
-  // ✅ บันทึก session ไว้ใน sessionStorage
   sessionStorage.setItem('hkt_user', selectedUser);
-
   currentUser = selectedUser;
   setSyncStatus('connecting');
   subscribeLogs();
@@ -797,9 +850,7 @@ function renderSidebarAvatar() {
 
 function logout() {
   if (!confirm('ออกจากระบบ?')) return;
-  // ✅ ลบ session ออกเมื่อ logout
   sessionStorage.removeItem('hkt_user');
-
   if (logsUnsub) { logsUnsub(); logsUnsub = null; }
   if (billsUnsub) { billsUnsub(); billsUnsub = null; }
   currentUser = null; logs = []; bills = []; selectedUser = null;
@@ -832,8 +883,8 @@ function renderDash() {
   document.getElementById('s-total').textContent = logs.length;
   document.getElementById('s-inprog').textContent = logs.filter(l => l.status === 'กำลังทำ').length;
   document.getElementById('s-done').textContent = logs.filter(l => l.status === 'เสร็จแล้ว').length;
-  const totalBills = bills.reduce((a, b) => a + (parseInt(b.count) || 0), 0);
-  document.getElementById('s-bills').textContent = totalBills;
+  const totalCopies = bills.reduce((a, b) => a + (parseInt(b.totalCount) || 0), 0);
+  document.getElementById('s-bills').textContent = totalCopies;
   const recent = [...logs].reverse().slice(0, 5);
   const rb = document.getElementById('recent-tbody');
   rb.innerHTML = recent.length
@@ -950,78 +1001,118 @@ function saveEdit() {
     .catch(err => { console.error(err); showToast('แก้ไขไม่สำเร็จ'); });
 }
 
-// ====== BILLS ======
-function parseBillPaste() {
-  const billDate=document.getElementById('bill-date').value;
-  if(!billDate){showToast('กรุณาเลือกวันที่ของรายงานก่อน');return;}
-  const paperStart=document.getElementById('bill-paper-start').value.trim();
-  const paperEnd=document.getElementById('bill-paper-end').value.trim();
-  const paperDamaged=document.getElementById('bill-paper-damaged').value.trim();
-  const raw=document.getElementById('bill-paste').value;
-  if(!raw.trim()){showToast('กรุณาวางข้อมูลก่อน');return;}
-  const lines=raw.split('\n').map(l=>l.trim()).filter(l=>l.length);
-  parsedBills=[];
-  lines.forEach(line=>{
-    const cols=line.split('\t');
-    if(cols.length<2)return;
-    parsedBills.push({date:billDate,seq:(cols[0]||'').trim(),receiptRange:(cols[1]||'').trim(),
-      line2:(cols[2]||'').trim(),billRange:(cols[3]||'').trim(),count:(cols[4]||'').trim(),
-      paperStart,paperEnd,paperDamaged,note:(cols[5]||'').trim()});
+// ====== BILLS — คำนวณจาก Excel paste ======
+function calcBillSummary() {
+  const raw = document.getElementById('bill-paste').value;
+  if (!raw.trim()) { showToast('กรุณาวางข้อมูลจาก Excel ก่อน'); return; }
+
+  const lines = raw.split('\n').map(l => l.trim()).filter(l => l.length);
+  if (!lines.length) { showToast('ไม่พบข้อมูลในช่องที่วาง'); return; }
+
+  let totalRoutes = 0;
+  let totalCount = 0;
+  let noteCount = 0;
+  const routeSet = new Set();
+
+  lines.forEach(line => {
+    const cols = line.split('\t');
+    if (cols.length < 2) return;
+    // คอลัมน์: [0]=ลำดับ [1]=พิมพ์ใบเสร็จ [2]=สาย [3]=ใบแจ้งเลขที่ [4]=จำนวนฉบับ [5]=หมายเหตุ
+    const routeName = (cols[2] || '').trim();
+    const countVal  = parseInt((cols[4] || '0').replace(/,/g, '')) || 0;
+    const noteVal   = (cols[5] || '').trim();
+    if (routeName) routeSet.add(routeName);
+    totalCount += countVal;
+    if (noteVal) noteCount++;
   });
-  if(!parsedBills.length){showToast('ไม่สามารถแยกข้อมูลได้ ตรวจสอบรูปแบบที่วาง');return;}
-  const tbody=document.getElementById('bill-preview-tbody');
-  tbody.innerHTML=parsedBills.map(b=>`<tr>
-    <td>${b.seq}</td><td>${b.receiptRange}</td><td>${b.line2}</td><td>${b.billRange}</td>
-    <td>${b.count}</td><td>${b.paperStart||'-'}</td><td>${b.paperEnd||'-'}</td>
-    <td style="color:#A32D2D">${b.paperDamaged||'-'}</td><td>${b.note||'-'}</td>
-  </tr>`).join('');
-  document.getElementById('bill-preview-wrap').style.display='block';
-  const note=document.getElementById('bill-preview-note');
-  note.textContent=`ตรวจพบ ${parsedBills.length} แถว สำหรับวันที่ ${billDate} — ตรวจสอบความถูกต้องก่อนกดบันทึก`;
-  note.classList.add('show');
+
+  totalRoutes = routeSet.size || lines.length; // fallback: นับแถวถ้าไม่มีชื่อสาย
+
+  // แสดงผล
+  document.getElementById('calc-routes').textContent = totalRoutes;
+  document.getElementById('calc-count').textContent  = totalCount.toLocaleString();
+  document.getElementById('calc-rows').textContent   = lines.length;
+  document.getElementById('calc-notes').textContent  = noteCount || '-';
+  document.getElementById('bill-calc-result').style.display = 'block';
+
+  // กรอกค่าลงฟอร์มบันทึก
+  document.getElementById('bill-routes').value      = totalRoutes;
+  document.getElementById('bill-total-count').value = totalCount;
+
+  showToast(`คำนวณเสร็จ: ${totalRoutes} สาย / ${totalCount.toLocaleString()} ฉบับ`);
 }
-function cancelBillPreview(){parsedBills=[];document.getElementById('bill-preview-wrap').style.display='none';document.getElementById('bill-preview-note').classList.remove('show');}
-function confirmSaveBills(){
-  if(!parsedBills.length)return;
-  const batch = db.batch();
-  parsedBills.forEach(b => {
-    const ref = db.collection('bills').doc();
-    batch.set(ref, { ...b, owner: currentUser, createdAt: firebase.firestore.FieldValue.serverTimestamp() });
-  });
-  batch.commit()
+
+function clearBillPaste() {
+  document.getElementById('bill-paste').value = '';
+  document.getElementById('bill-calc-result').style.display = 'none';
+}
+
+// ====== BILLS — บันทึกสรุปประจำวัน ======
+function saveBillSummary() {
+  const date       = document.getElementById('bill-date').value;
+  const routes     = document.getElementById('bill-routes').value.trim();
+  const totalCount = document.getElementById('bill-total-count').value.trim();
+  const paperStart = document.getElementById('bill-paper-start').value.trim();
+  const paperEnd   = document.getElementById('bill-paper-end').value.trim();
+  const damaged    = document.getElementById('bill-paper-damaged').value.trim();
+  const note       = document.getElementById('bill-note').value.trim();
+
+  if (!date)       { showToast('กรุณาเลือกวันที่ของรายงาน'); return; }
+  if (!routes)     { showToast('กรุณาใส่จำนวนสายทั้งหมด'); return; }
+  if (!totalCount) { showToast('กรุณาใส่จำนวนฉบับทั้งหมด'); return; }
+
+  const record = {
+    date, routes: parseInt(routes) || 0,
+    totalCount: parseInt(totalCount) || 0,
+    paperStart, paperEnd, damaged, note,
+    owner: currentUser,
+    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+  };
+
+  db.collection('bills').add(record)
     .then(() => {
-      showToast(`บันทึก ${parsedBills.length} รายการเรียบร้อยแล้ว ✓`);
-      clearBillPaste(); cancelBillPreview();
+      showToast('บันทึกสรุปบิลเรียบร้อย ✓');
+      clearBillForm();
     })
     .catch(err => { console.error(err); showToast('บันทึกไม่สำเร็จ ลองใหม่อีกครั้ง'); });
 }
-function clearBillPaste(){document.getElementById('bill-paste').value='';}
-function renderBills(){
-  const filterDate=document.getElementById('bill-filter-date').value;
-  const filtered=filterDate?bills.filter(b=>b.date===filterDate):bills;
-  const tbody=document.getElementById('bill-tbody');
-  tbody.innerHTML=filtered.length
-    ?[...filtered].reverse().map(b=>`<tr>
-        <td style="white-space:nowrap;color:#666">${b.date||'-'}</td><td>${b.seq}</td>
-        <td>${b.receiptRange}</td><td>${b.line2}</td><td style="font-size:12px">${b.billRange}</td>
-        <td>${b.count}</td><td style="font-size:12px">${b.paperStart||'-'}</td>
-        <td style="font-size:12px">${b.paperEnd||'-'}</td>
-        <td style="color:#A32D2D;font-size:12px">${b.paperDamaged||'-'}</td>
-        <td style="color:#aaa;font-size:12px">${b.note||'-'}</td>
+
+function clearBillForm() {
+  ['bill-routes','bill-total-count','bill-paper-start','bill-paper-end','bill-paper-damaged','bill-note'].forEach(id => {
+    document.getElementById(id).value = '';
+  });
+  document.getElementById('bill-date').value = new Date().toISOString().split('T')[0];
+}
+
+// ====== BILLS — render ตาราง ======
+function renderBills() {
+  const filterDate = document.getElementById('bill-filter-date').value;
+  const filtered   = filterDate ? bills.filter(b => b.date === filterDate) : bills;
+  const tbody      = document.getElementById('bill-tbody');
+  tbody.innerHTML  = filtered.length
+    ? [...filtered].reverse().map(b => `<tr>
+        <td style="white-space:nowrap;color:#666;font-weight:600">${b.date||'-'}</td>
+        <td style="font-weight:700;color:#7F77DD;text-align:center">${b.routes||0}</td>
+        <td style="font-weight:700;color:#D4537E;text-align:center">${(b.totalCount||0).toLocaleString()}</td>
+        <td style="font-size:12px;font-family:monospace">${b.paperStart||'-'}</td>
+        <td style="font-size:12px;font-family:monospace">${b.paperEnd||'-'}</td>
+        <td style="color:#A32D2D;font-size:12px">${b.damaged||'-'}</td>
+        <td style="color:#888;font-size:12px">${b.note||'-'}</td>
         <td style="color:#999;font-size:12px;white-space:nowrap">${b.owner||'-'}</td>
         <td><button class="icon-btn del" onclick="deleteBill('${b.id}')">🗑</button></td>
       </tr>`).join('')
-    :'<tr><td colspan="12" class="empty">ยังไม่มีข้อมูล — วางข้อมูลจาก Excel ด้านบนเพื่อเริ่มบันทึก</td></tr>';
+    : '<tr><td colspan="9" class="empty">ยังไม่มีข้อมูล — บันทึกสรุปบิลจากฟอร์มด้านบน</td></tr>';
 }
-function deleteBill(id){
-  if(!confirm('ลบรายการนี้?'))return;
+
+function deleteBill(id) {
+  if (!confirm('ลบรายการนี้?')) return;
   db.collection('bills').doc(id).delete()
     .then(() => showToast('ลบรายการแล้ว'))
     .catch(err => { console.error(err); showToast('ลบไม่สำเร็จ'); });
 }
-function clearAllBills(){
-  if(!bills.length)return;
-  if(!confirm('ล้างข้อมูลบิลทั้งหมดของคุณ? การกระทำนี้ไม่สามารถย้อนกลับได้'))return;
+function clearAllBills() {
+  if (!bills.length) return;
+  if (!confirm('ล้างข้อมูลบิลทั้งหมดของคุณ? การกระทำนี้ไม่สามารถย้อนกลับได้')) return;
   const batch = db.batch();
   bills.forEach(b => batch.delete(db.collection('bills').doc(b.id)));
   batch.commit()
@@ -1030,60 +1121,61 @@ function clearAllBills(){
 }
 
 // ====== STATS ======
-function renderStats(){
-  const days=[];
-  for(let i=6;i>=0;i--){
-    const d=new Date(); d.setDate(d.getDate()-i);
-    const str=d.toISOString().split('T')[0];
-    const label=['อา','จ','อ','พ','พฤ','ศ','ส'][d.getDay()];
-    days.push({str,label,count:logs.filter(l=>l.date===str).length});
+function renderStats() {
+  const days = [];
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date(); d.setDate(d.getDate() - i);
+    const str   = d.toISOString().split('T')[0];
+    const label = ['อา','จ','อ','พ','พฤ','ศ','ส'][d.getDay()];
+    days.push({ str, label, count: logs.filter(l => l.date === str).length });
   }
-  const maxC=Math.max(...days.map(d=>d.count),1);
-  document.getElementById('bar-chart').innerHTML=days.map(d=>`
+  const maxC = Math.max(...days.map(d => d.count), 1);
+  document.getElementById('bar-chart').innerHTML = days.map(d => `
     <div class="bar-col">
-      <div class="bar-cnt">${d.count>0?d.count:''}</div>
+      <div class="bar-cnt">${d.count > 0 ? d.count : ''}</div>
       <div class="bar" style="height:${Math.round((d.count/maxC)*90)}px"></div>
       <div class="bar-lbl">${d.label}</div>
     </div>`).join('');
-  const statusCount={};
-  logs.forEach(l=>statusCount[l.status]=(statusCount[l.status]||0)+1);
-  document.getElementById('status-breakdown').innerHTML=Object.entries(statusCount).length
-    ?Object.entries(statusCount).map(([s,n])=>`
+  const statusCount = {};
+  logs.forEach(l => statusCount[l.status] = (statusCount[l.status] || 0) + 1);
+  document.getElementById('status-breakdown').innerHTML = Object.entries(statusCount).length
+    ? Object.entries(statusCount).map(([s,n]) => `
         <div class="mini-stat-row">
           <span class="label"><span class="badge ${STATUS_BADGE[s]||''}">${s}</span></span>
           <span class="value">${n} รายการ</span>
         </div>`).join('')
-    :'<p style="color:#aaa;font-size:13px;padding:12px 0">ยังไม่มีข้อมูล</p>';
-  const ccount={};
-  logs.forEach(l=>{const c=l.client||'ไม่ระบุ';ccount[c]=(ccount[c]||0)+1;});
-  document.getElementById('client-hours').innerHTML=Object.entries(ccount).length
-    ?Object.entries(ccount).sort((a,b)=>b[1]-a[1]).map(([c,n])=>`
+    : '<p style="color:#aaa;font-size:13px;padding:12px 0">ยังไม่มีข้อมูล</p>';
+  const ccount = {};
+  logs.forEach(l => { const c = l.client || 'ไม่ระบุ'; ccount[c] = (ccount[c] || 0) + 1; });
+  document.getElementById('client-hours').innerHTML = Object.entries(ccount).length
+    ? Object.entries(ccount).sort((a,b) => b[1]-a[1]).map(([c,n]) => `
         <div class="mini-stat-row"><span class="label">${c}</span><span class="value">${n} งาน</span></div>`).join('')
-    :'<p style="color:#aaa;font-size:13px;padding:12px 0">ยังไม่มีข้อมูล</p>';
+    : '<p style="color:#aaa;font-size:13px;padding:12px 0">ยังไม่มีข้อมูล</p>';
 }
 
 // ====== EXPORT ======
-function exportCSV(){
-  if(!logs.length){showToast('ไม่มีข้อมูลที่จะ Export');return;}
-  const headers=['ID','ผู้บันทึก','โปรเจกต์','การไฟฟ้าที่แจ้งปัญหา','สถานะ','วันที่เริ่มดำเนินการ','วันที่ดำเนินการเสร็จ','โน้ต'];
-  const rows=logs.map(l=>[l.id,l.owner||'',l.project,l.client||'',l.status,l.date||'',l.end||'',l.note||'']
-    .map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(','));
-  const csv='\uFEFF'+[headers.join(','),...rows].join('\n');
-  const a=document.createElement('a');
-  a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));
-  a.download='dw-worklog-'+new Date().toISOString().split('T')[0]+'.csv';
-  a.click(); showToast('Export สำเร็จ ✓');
+function exportCSV() {
+  if (!logs.length) { showToast('ไม่มีข้อมูลที่จะ Export'); return; }
+  const headers = ['ID','ผู้บันทึก','โปรเจกต์','การไฟฟ้าที่แจ้งปัญหา','สถานะ','วันที่เริ่มดำเนินการ','วันที่ดำเนินการเสร็จ','โน้ต'];
+  const rows = logs.map(l => [l.id,l.owner||'',l.project,l.client||'',l.status,l.date||'',l.end||'',l.note||'']
+    .map(v => '"'+String(v).replace(/"/g,'""')+'"').join(','));
+  const csv = '\uFEFF' + [headers.join(','), ...rows].join('\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([csv], {type:'text/csv;charset=utf-8'}));
+  a.download = 'dw-worklog-' + new Date().toISOString().split('T')[0] + '.csv';
+  a.click();
+  showToast('Export สำเร็จ ✓');
 }
 
 // ====== TOAST ======
-function showToast(msg){
-  const t=document.getElementById('toast');
-  t.textContent=msg; t.classList.add('show');
-  setTimeout(()=>t.classList.remove('show'),2500);
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2500);
 }
 
-// ====== SIDEBAR ART (fireflies) ======
-function spawnFireflies(){
+// ====== SIDEBAR FIREFLIES ======
+function spawnFireflies() {
   const wrap = document.getElementById('sidebarFireflies');
   if (!wrap) return;
   const colors = ['#7F77DD','#D4537E','#F0997B'];
@@ -1111,7 +1203,6 @@ document.getElementById('bill-date').value = new Date().toISOString().split('T')
 renderLoginUsers();
 spawnFireflies();
 
-// ✅ ตรวจสอบ session หลัง F5 — ถ้าเคย login ไว้ในแท็บนี้ ให้เข้าระบบต่อเลยโดยไม่ต้อง login ใหม่
 const savedUser = sessionStorage.getItem('hkt_user');
 if (savedUser && USERS.find(u => u.name === savedUser)) {
   currentUser = savedUser;
@@ -1122,8 +1213,6 @@ if (savedUser && USERS.find(u => u.name === savedUser)) {
   document.getElementById('mainApp').style.display = 'flex';
   document.getElementById('sidebar-name').textContent = currentUser;
   renderSidebarAvatar();
-
-  // ✅ กลับไปหน้าที่ค้างไว้ก่อน F5
   const savedPage = sessionStorage.getItem('hkt_page');
   if (savedPage) {
     const navBtns = ['dashboard','logs','add','bills','stats'];
