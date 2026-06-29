@@ -813,6 +813,7 @@ function logout() {
 
 // ====== PAGES ======
 function showPage(id, btn) {
+  sessionStorage.setItem('hkt_page', id);
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
   document.getElementById('page-' + id).classList.add('active');
@@ -1121,6 +1122,15 @@ if (savedUser && USERS.find(u => u.name === savedUser)) {
   document.getElementById('mainApp').style.display = 'flex';
   document.getElementById('sidebar-name').textContent = currentUser;
   renderSidebarAvatar();
+
+  // ✅ กลับไปหน้าที่ค้างไว้ก่อน F5
+  const savedPage = sessionStorage.getItem('hkt_page');
+  if (savedPage) {
+    const navBtns = ['dashboard','logs','add','bills','stats'];
+    const idx = navBtns.indexOf(savedPage);
+    const btn = idx >= 0 ? document.querySelectorAll('.nav-item')[idx] : null;
+    showPage(savedPage, btn);
+  }
 }
 </script>
 </body>
