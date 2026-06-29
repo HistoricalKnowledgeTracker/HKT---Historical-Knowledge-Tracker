@@ -13,6 +13,29 @@
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Segoe UI',Tahoma,sans-serif;background:linear-gradient(135deg,#fce4ec,#f3e5f5,#ede7f6);color:#1a1a1a;min-height:100vh;display:flex;flex-direction:column;position:relative;overflow-x:hidden;overflow-y:auto}
 body::before{content:'';position:fixed;bottom:0;left:0;width:100%;height:200px;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 200'%3E%3Cpath d='M0,100 Q360,40 720,100 T1440,100 V200 H0 Z' fill='%23D4537E' opacity='0.10'/%3E%3Cpath d='M0,130 Q360,80 720,130 T1440,130 V200 H0 Z' fill='%237F77DD' opacity='0.12'/%3E%3C/svg%3E") bottom no-repeat;background-size:cover;pointer-events:none;z-index:0}
+
+/* ====== FULL-PAGE BACKGROUND ANIMATION ====== */
+.page-bg{position:fixed;inset:0;width:100%;height:100%;overflow:hidden;z-index:0;pointer-events:none}
+@keyframes pbgDriftA{0%,100%{transform:translate(0,0) scale(1) rotate(0deg)}50%{transform:translate(40px,55px) scale(1.12) rotate(8deg)}}
+@keyframes pbgDriftB{0%,100%{transform:translate(0,0) scale(1.05) rotate(0deg)}50%{transform:translate(-50px,-35px) scale(.92) rotate(-10deg)}}
+@keyframes pbgDriftC{0%,100%{transform:translate(0,0) scale(1) rotate(0deg);opacity:.45}50%{transform:translate(-35px,45px) scale(1.18) rotate(6deg);opacity:.65}}
+@keyframes pbgFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-25px)}}
+.pbg-blob{position:absolute;border-radius:50%;filter:blur(0.5px)}
+.pbg-blob.pbg-b1{width:340px;height:340px;top:-90px;left:-100px;background:radial-gradient(circle at 35% 35%,#C9C2F2,#7F77DD 65%,transparent 100%);opacity:.30;animation:pbgDriftA 22s ease-in-out infinite}
+.pbg-blob.pbg-b2{width:260px;height:260px;top:55%;left:-80px;background:radial-gradient(circle at 35% 35%,#F4B9CF,#D4537E 65%,transparent 100%);opacity:.26;animation:pbgDriftB 26s ease-in-out infinite}
+.pbg-blob.pbg-b3{width:300px;height:300px;top:-60px;right:-90px;background:radial-gradient(circle at 35% 35%,#FBD3BE,#F0997B 65%,transparent 100%);opacity:.28;animation:pbgDriftC 20s ease-in-out infinite}
+.pbg-blob.pbg-b4{width:220px;height:220px;bottom:-60px;right:-50px;background:radial-gradient(circle at 35% 35%,#C9C2F2,#7F77DD 65%,transparent 100%);opacity:.24;animation:pbgDriftB 24s ease-in-out infinite}
+.pbg-blob.pbg-b5{width:150px;height:150px;top:35%;right:18%;background:radial-gradient(circle at 35% 35%,#F4B9CF,#D4537E 65%,transparent 100%);opacity:.20;animation:pbgFloat 12s ease-in-out infinite}
+.pbg-blob.pbg-b6{width:120px;height:120px;top:12%;left:30%;background:radial-gradient(circle at 35% 35%,#FBD3BE,#F0997B 65%,transparent 100%);opacity:.18;animation:pbgFloat 15s ease-in-out infinite 1.5s}
+.pbg-waves{position:absolute;bottom:0;left:0;width:100%;height:55%}
+@keyframes pbgWaveShift1{0%,100%{transform:translateX(0)}50%{transform:translateX(-40px)}}
+@keyframes pbgWaveShift2{0%,100%{transform:translateX(0)}50%{transform:translateX(35px)}}
+.pbg-wave.w1{animation:pbgWaveShift1 14s ease-in-out infinite}
+.pbg-wave.w2{animation:pbgWaveShift2 18s ease-in-out infinite}
+.pbg-wave.w3{animation:pbgWaveShift1 22s ease-in-out infinite}
+@keyframes pbgRise{0%{transform:translate(0,0) scale(1);opacity:0}10%{opacity:.85}50%{opacity:.55}90%{opacity:0}100%{transform:translate(var(--dx,10px),-105vh) scale(.7);opacity:0}}
+.pbg-firefly{position:absolute;border-radius:50%;bottom:-10px;animation:pbgRise linear infinite}
+
 .app{display:flex;height:100vh;overflow:hidden;background:transparent;position:relative;z-index:1}
 
 /* Sidebar */
@@ -212,7 +235,7 @@ body::before{content:'';position:fixed;bottom:0;left:0;width:100%;height:200px;b
 
 /* ====== LOGIN PAGE ====== */
 .login-wrap{display:flex;align-items:center;justify-content:center;min-height:100vh;background:transparent;position:relative;z-index:1;padding:24px}
-.login-box{background:linear-gradient(160deg,#ffffff,#fdf2f6 55%,#f3e8fb);border:1px solid #e8e8e4;border-radius:22px;padding:32px 38px;width:980px;max-width:96vw;max-height:none;overflow:visible;position:relative;box-shadow:0 24px 60px -16px rgba(124,77,255,0.28)}
+.login-box{background:linear-gradient(160deg,rgba(255,255,255,0.94),rgba(253,242,246,0.92) 55%,rgba(243,232,251,0.92));backdrop-filter:blur(6px);border:1px solid #e8e8e4;border-radius:22px;padding:32px 38px;width:980px;max-width:96vw;max-height:none;overflow:visible;position:relative;box-shadow:0 24px 60px -16px rgba(124,77,255,0.28)}
 .login-bubbles{position:absolute;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none}
 .login-inner{position:relative;z-index:1;width:100%}
 .login-logo{text-align:center;margin-bottom:22px}
@@ -259,6 +282,22 @@ body::before{content:'';position:fixed;bottom:0;left:0;width:100%;height:200px;b
 </style>
 </head>
 <body>
+
+<!-- PAGE BACKGROUND ANIMATION -->
+<div class="page-bg" id="pageBg">
+  <div class="pbg-blob pbg-b1"></div>
+  <div class="pbg-blob pbg-b2"></div>
+  <div class="pbg-blob pbg-b3"></div>
+  <div class="pbg-blob pbg-b4"></div>
+  <div class="pbg-blob pbg-b5"></div>
+  <div class="pbg-blob pbg-b6"></div>
+  <svg class="pbg-waves" viewBox="0 0 1440 900" preserveAspectRatio="xMidYMid slice">
+    <path class="pbg-wave w1" d="M0,650 Q240,600 480,650 T960,650 T1440,650 V900 H0 Z" fill="#D4537E" opacity="0.07"/>
+    <path class="pbg-wave w2" d="M0,700 Q240,760 480,700 T960,700 T1440,700 V900 H0 Z" fill="#7F77DD" opacity="0.08"/>
+    <path class="pbg-wave w3" d="M0,760 Q240,720 480,760 T960,760 T1440,760 V900 H0 Z" fill="#F0997B" opacity="0.07"/>
+  </svg>
+  <div id="pageBgFireflies"></div>
+</div>
 
 <!-- LOGIN -->
 <div class="login-wrap" id="loginPage">
@@ -1515,12 +1554,35 @@ function spawnFireflies() {
   }
 }
 
+function spawnPageBgFireflies() {
+  const wrap = document.getElementById('pageBgFireflies');
+  if (!wrap) return;
+  const colors = ['#7F77DD','#D4537E','#F0997B','#AFA9EC','#ED93B1'];
+  const count = 26;
+  for (let i = 0; i < count; i++) {
+    const dot = document.createElement('div');
+    dot.className = 'pbg-firefly';
+    const size = 3 + Math.random() * 4;
+    const color = colors[i % colors.length];
+    dot.style.width = size + 'px';
+    dot.style.height = size + 'px';
+    dot.style.left = (Math.random() * 100) + 'vw';
+    dot.style.background = color;
+    dot.style.boxShadow = '0 0 8px 3px ' + color + '88';
+    dot.style.setProperty('--dx', (Math.random() * 60 - 30) + 'px');
+    dot.style.animationDuration = (14 + Math.random() * 12) + 's';
+    dot.style.animationDelay = (Math.random() * 18) + 's';
+    wrap.appendChild(dot);
+  }
+}
+
 // ====== INIT ======
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
 document.getElementById('f-date').value = new Date().toISOString().split('T')[0];
 document.getElementById('bill-date').value = new Date().toISOString().split('T')[0];
 renderLoginUsers();
 spawnFireflies();
+spawnPageBgFireflies();
 updateMonthLabel();
 
 const savedUser = sessionStorage.getItem('hkt_user');
