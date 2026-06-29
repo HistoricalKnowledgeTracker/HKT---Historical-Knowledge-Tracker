@@ -5,6 +5,7 @@
 	<link href="https://fonts.googleapis.com/css2?family=Pacifico&family=Dancing+Script:wght@600&display=swap" rel="stylesheet">
 	<script src="https://www.gstatic.com/firebasejs/12.15.0/firebase-app-compat.js"></script>
 	<script src="https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore-compat.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Historical Knowledge Tracker</title>
@@ -155,6 +156,19 @@ body::before{content:'';position:fixed;bottom:0;left:0;width:100%;height:200px;b
 .paste-area{width:100%;min-height:120px;font-family:'Consolas',monospace;font-size:12px;padding:10px;border-radius:8px;border:1px dashed #c9a8c2;background:#fdf9fb;resize:vertical}
 .paste-area:focus{outline:none;border-color:#D4537E;background:#fff}
 .paste-hint{font-size:11px;color:#aaa;margin-top:6px}
+
+/* ── Drag-drop zone ── */
+.drop-zone{width:100%;min-height:140px;border:2px dashed #c9a8c2;border-radius:12px;background:#fdf9fb;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;transition:all .2s;position:relative;overflow:hidden}
+.drop-zone:hover,.drop-zone.drag-over{border-color:#D4537E;background:#fdf0f6;transform:scale(1.01)}
+.drop-zone.has-file{border-color:#3B6D11;background:#f0faf0;border-style:solid}
+.drop-zone-icon{font-size:32px;margin-bottom:8px;transition:transform .2s}
+.drop-zone:hover .drop-zone-icon,.drop-zone.drag-over .drop-zone-icon{transform:translateY(-4px)}
+.drop-zone-label{font-size:13px;color:#a880c0;font-weight:600;margin-bottom:4px}
+.drop-zone-sub{font-size:11px;color:#bbb}
+.drop-zone.has-file .drop-zone-label{color:#3B6D11}
+.drop-zone input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.drop-zone-filename{font-size:12px;color:#3B6D11;font-weight:600;margin-top:6px;background:#e6f4dd;padding:3px 10px;border-radius:20px;display:none}
+.drop-zone.has-file .drop-zone-filename{display:inline-block}
 
 /* ── Bill summary card ── */
 .bill-summary-card{background:linear-gradient(135deg,#fdf2f6,#f3e8fb);border:1.5px solid #e8d4f0;border-radius:12px;padding:16px 20px;margin-top:16px}
@@ -499,15 +513,29 @@ body::before{content:'';position:fixed;bottom:0;left:0;width:100%;height:200px;b
       <!-- BILLS / INVOICES -->
       <div class="page" id="page-bills">
 
-        <!-- ── ขั้นที่ 1: วางข้อมูล Excel เพื่อคำนวณ ── -->
+        <!-- ── ขั้นที่ 1: ลากไฟล์ Excel มาวาง ── -->
         <div class="section">
-          <div class="section-header"><span class="section-title"><i class="ti ti-clipboard-text"></i>วางข้อมูลจาก Excel เพื่อคำนวณสรุป</span></div>
-          <p style="font-size:12px;color:#888;margin-bottom:10px">คัดลอกตารางจาก Excel แล้ววางที่นี่ — ระบบจะนับจำนวนสายและรวมจำนวนฉบับให้อัตโนมัติ</p>
-          <textarea class="paste-area" id="bill-paste" placeholder="วางข้อมูลที่คัดลอกจาก Excel ที่นี่...&#10;(รูปแบบ: ลำดับ TAB พิมพ์ใบเสร็จลำดับที่ TAB สาย TAB ใบแจ้งค่าไฟฟ้าเลขที่ TAB จำนวนฉบับ TAB หมายเหตุ)"></textarea>
-          <div class="paste-hint">วางข้อมูลคั่นด้วย Tab ตรงจาก Excel — ระบบจะนับสายและรวมฉบับให้ทันที</div>
-          <div style="margin-top:10px;display:flex;gap:8px">
+          <div class="section-header"><span class="section-title"><i class="ti ti-table-import"></i>นำเข้าไฟล์ Excel เพื่อคำนวณสรุป</span></div>
+          <p style="font-size:12px;color:#888;margin-bottom:12px">ลากไฟล์ Excel (.xlsx / .xls) มาวางในกรอบด้านล่าง หรือคลิกเพื่อเลือกไฟล์ — ระบบจะนับสายและรวมฉบับให้อัตโนมัติ</p>
+
+          <div class="drop-zone" id="dropZone"
+            ondragover="handleDragOver(event)"
+            ondragleave="handleDragLeave(event)"
+            ondrop="handleDrop(event)">
+            <input type="file" accept=".xlsx,.xls" onchange="handleFileInput(event)" id="fileInput">
+            <div class="drop-zone-icon">📊</div>
+            <div class="drop-zone-label" id="dropLabel">ลากไฟล์ Excel มาวางที่นี่</div>
+            <div class="drop-zone-sub">หรือคลิกเพื่อเลือกไฟล์ .xlsx / .xls</div>
+            <div class="drop-zone-filename" id="dropFilename"></div>
+          </div>
+
+          <div style="margin-top:10px;display:flex;gap:8px;align-items:center">
             <button class="btn primary" onclick="calcBillSummary()"><i class="ti ti-calculator"></i> คำนวณสรุป</button>
-            <button class="btn" onclick="clearBillPaste()">✕ ล้าง</button>
+            <button class="btn" onclick="clearBillPaste()">✕ ล้างไฟล์</button>
+            <span id="sheet-select-wrap" style="display:none;align-items:center;gap:6px;font-size:13px">
+              <label style="color:#666;font-size:12px">ชีต:</label>
+              <select id="sheet-select" style="font-size:13px;padding:5px 8px;border-radius:7px;border:1px solid #ddd" onchange="onSheetChange()"></select>
+            </span>
           </div>
 
           <!-- ผลการคำนวณ -->
@@ -1001,49 +1029,147 @@ function saveEdit() {
     .catch(err => { console.error(err); showToast('แก้ไขไม่สำเร็จ'); });
 }
 
-// ====== BILLS — คำนวณจาก Excel paste ======
+// ====== BILLS — drag-drop + SheetJS ======
+let loadedWorkbook = null;
+let activeSheetData = []; // array of row arrays
+
+function handleDragOver(e) {
+  e.preventDefault();
+  document.getElementById('dropZone').classList.add('drag-over');
+}
+function handleDragLeave(e) {
+  document.getElementById('dropZone').classList.remove('drag-over');
+}
+function handleDrop(e) {
+  e.preventDefault();
+  const zone = document.getElementById('dropZone');
+  zone.classList.remove('drag-over');
+  const file = e.dataTransfer.files[0];
+  if (file) loadExcelFile(file);
+}
+function handleFileInput(e) {
+  const file = e.target.files[0];
+  if (file) loadExcelFile(file);
+}
+
+function loadExcelFile(file) {
+  if (!file.name.match(/\.(xlsx|xls)$/i)) {
+    showToast('กรุณาเลือกไฟล์ .xlsx หรือ .xls เท่านั้น');
+    return;
+  }
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      loadedWorkbook = XLSX.read(e.target.result, { type: 'array' });
+      const sheetNames = loadedWorkbook.SheetNames;
+
+      // populate sheet selector
+      const sel = document.getElementById('sheet-select');
+      sel.innerHTML = sheetNames.map((n,i) => `<option value="${i}">${n}</option>`).join('');
+      document.getElementById('sheet-select-wrap').style.display = sheetNames.length > 1 ? 'flex' : 'none';
+
+      // load first sheet
+      loadSheet(0);
+
+      // update drop zone UI
+      const zone = document.getElementById('dropZone');
+      zone.classList.add('has-file');
+      document.getElementById('dropLabel').textContent = '✓ โหลดไฟล์สำเร็จ';
+      document.getElementById('dropFilename').textContent = file.name;
+      showToast(`โหลด "${file.name}" สำเร็จ — กด "คำนวณสรุป"`);
+    } catch(err) {
+      console.error(err);
+      showToast('อ่านไฟล์ไม่สำเร็จ — ตรวจสอบว่าเป็น Excel จริงๆ');
+    }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+function loadSheet(idx) {
+  if (!loadedWorkbook) return;
+  const sheetName = loadedWorkbook.SheetNames[idx];
+  const ws = loadedWorkbook.Sheets[sheetName];
+  // convert to array-of-arrays, skipping empty rows
+  const raw = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' });
+  activeSheetData = raw.filter(row => row.some(cell => String(cell).trim() !== ''));
+}
+
+function onSheetChange() {
+  const idx = parseInt(document.getElementById('sheet-select').value) || 0;
+  loadSheet(idx);
+  // reset calc result
+  document.getElementById('bill-calc-result').style.display = 'none';
+  showToast('เปลี่ยนชีตแล้ว — กด "คำนวณสรุป" ใหม่');
+}
+
 function calcBillSummary() {
-  const raw = document.getElementById('bill-paste').value;
-  if (!raw.trim()) { showToast('กรุณาวางข้อมูลจาก Excel ก่อน'); return; }
+  if (!activeSheetData.length) {
+    showToast('กรุณาลากไฟล์ Excel มาก่อน');
+    return;
+  }
 
-  const lines = raw.split('\n').map(l => l.trim()).filter(l => l.length);
-  if (!lines.length) { showToast('ไม่พบข้อมูลในช่องที่วาง'); return; }
+  // Try to detect header row and find column indices
+  // Expected columns (Thai): ลำดับ | พิมพ์ใบเสร็จ | สาย | ใบแจ้งค่าไฟฟ้าเลขที่ | จำนวนฉบับ | หมายเหตุ
+  let dataRows = activeSheetData;
+  let colRoute = 2;   // default col index for "สาย"
+  let colCount = 4;   // default col index for "จำนวนฉบับ"
+  let colNote  = 5;   // default col index for "หมายเหตุ"
 
-  let totalRoutes = 0;
+  // Scan first 5 rows for header
+  for (let r = 0; r < Math.min(5, dataRows.length); r++) {
+    const row = dataRows[r].map(c => String(c).trim());
+    const hasRoute = row.findIndex(c => c.includes('สาย'));
+    const hasCount = row.findIndex(c => c.includes('ฉบับ') || c.includes('จำนวน'));
+    const hasNote  = row.findIndex(c => c.includes('หมายเหตุ'));
+    if (hasRoute >= 0 && hasCount >= 0) {
+      colRoute = hasRoute;
+      colCount = hasCount;
+      if (hasNote >= 0) colNote = hasNote;
+      dataRows = dataRows.slice(r + 1); // skip header
+      break;
+    }
+  }
+
   let totalCount = 0;
-  let noteCount = 0;
+  let noteCount  = 0;
   const routeSet = new Set();
 
-  lines.forEach(line => {
-    const cols = line.split('\t');
-    if (cols.length < 2) return;
-    // คอลัมน์: [0]=ลำดับ [1]=พิมพ์ใบเสร็จ [2]=สาย [3]=ใบแจ้งเลขที่ [4]=จำนวนฉบับ [5]=หมายเหตุ
-    const routeName = (cols[2] || '').trim();
-    const countVal  = parseInt((cols[4] || '0').replace(/,/g, '')) || 0;
-    const noteVal   = (cols[5] || '').trim();
-    if (routeName) routeSet.add(routeName);
+  dataRows.forEach(row => {
+    const routeVal = String(row[colRoute] || '').trim();
+    const countRaw = String(row[colCount] || '0').replace(/,/g,'');
+    const countVal = parseFloat(countRaw) || 0;
+    const noteVal  = String(row[colNote]  || '').trim();
+
+    if (routeVal) routeSet.add(routeVal);
     totalCount += countVal;
     if (noteVal) noteCount++;
   });
 
-  totalRoutes = routeSet.size || lines.length; // fallback: นับแถวถ้าไม่มีชื่อสาย
+  const totalRoutes = routeSet.size || dataRows.length;
 
-  // แสดงผล
+  // Show result card
   document.getElementById('calc-routes').textContent = totalRoutes;
-  document.getElementById('calc-count').textContent  = totalCount.toLocaleString();
-  document.getElementById('calc-rows').textContent   = lines.length;
+  document.getElementById('calc-count').textContent  = Math.round(totalCount).toLocaleString();
+  document.getElementById('calc-rows').textContent   = dataRows.length;
   document.getElementById('calc-notes').textContent  = noteCount || '-';
   document.getElementById('bill-calc-result').style.display = 'block';
 
-  // กรอกค่าลงฟอร์มบันทึก
+  // Pre-fill form
   document.getElementById('bill-routes').value      = totalRoutes;
-  document.getElementById('bill-total-count').value = totalCount;
+  document.getElementById('bill-total-count').value = Math.round(totalCount);
 
-  showToast(`คำนวณเสร็จ: ${totalRoutes} สาย / ${totalCount.toLocaleString()} ฉบับ`);
+  showToast(`คำนวณเสร็จ: ${totalRoutes} สาย / ${Math.round(totalCount).toLocaleString()} ฉบับ`);
 }
 
 function clearBillPaste() {
-  document.getElementById('bill-paste').value = '';
+  loadedWorkbook = null;
+  activeSheetData = [];
+  document.getElementById('fileInput').value = '';
+  const zone = document.getElementById('dropZone');
+  zone.classList.remove('has-file','drag-over');
+  document.getElementById('dropLabel').textContent = 'ลากไฟล์ Excel มาวางที่นี่';
+  document.getElementById('dropFilename').textContent = '';
+  document.getElementById('sheet-select-wrap').style.display = 'none';
   document.getElementById('bill-calc-result').style.display = 'none';
 }
 
