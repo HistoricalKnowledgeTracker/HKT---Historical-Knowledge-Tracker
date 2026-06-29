@@ -163,7 +163,7 @@ body::before{content:'';position:fixed;bottom:0;left:0;width:100%;height:200px;b
 
 /* ========== LOGIN PAGE ========== */
 .login-wrap{display:flex;align-items:center;justify-content:center;min-height:100vh;background:transparent;position:relative;z-index:1;padding:24px}
-.login-box{background:linear-gradient(160deg,#ffffff,#fdf2f6 55%,#f3e8fb);border:1px solid #e8e8e4;border-radius:22px;padding:36px 32px;width:420px;position:relative;overflow:hidden;box-shadow:0 24px 60px -16px rgba(124,77,255,0.28)}
+.login-box{background:linear-gradient(160deg,#ffffff,#fdf2f6 55%,#f3e8fb);border:1px solid #e8e8e4;border-radius:22px;padding:32px 34px;width:680px;max-width:94vw;max-height:92vh;overflow-y:auto;position:relative;box-shadow:0 24px 60px -16px rgba(124,77,255,0.28)}
 .login-bubbles{position:absolute;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none}
 .login-inner{position:relative;z-index:1;width:100%}
 .login-logo{text-align:center;margin-bottom:22px}
@@ -171,12 +171,12 @@ body::before{content:'';position:fixed;bottom:0;left:0;width:100%;height:200px;b
 .login-logo h1{font-size:19px;font-weight:400;font-family:'Pacifico',cursive;color:#ffffff;background:linear-gradient(135deg,#7F77DD,#D4537E,#F0997B);padding:9px 22px;border-radius:30px;letter-spacing:0.3px;display:inline-flex;align-items:center;gap:8px;white-space:nowrap;box-shadow:0 8px 20px -8px rgba(212,83,126,0.5)}
 .login-logo p{font-size:13px;color:#D4537E;margin-top:9px;font-style:italic;letter-spacing:0.3px;font-family:'Dancing Script',cursive}
 .login-select-label{font-size:10.5px;color:#a880c0;letter-spacing:0.8px;font-weight:600;text-transform:uppercase;margin-bottom:10px;padding-left:2px}
-.user-list{display:flex;flex-direction:column;gap:8px;margin-bottom:18px}
+.user-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:10px;margin-bottom:18px}
 
 /* ---- user card with diagonal slash ---- */
 .user-opt{
   position:relative;
-  height:62px;
+  height:70px;
   border-radius:12px;
   overflow:hidden;
   cursor:pointer;
@@ -216,12 +216,13 @@ body::before{content:'';position:fixed;bottom:0;left:0;width:100%;height:200px;b
   overflow:hidden;
 }
 .user-opt-avatar img{width:100%;height:100%;object-fit:cover;display:block}
-.uopt-info{flex:1;padding:0 10px;min-width:0;overflow:hidden}
+.uopt-info{flex:1;padding:0 10px;min-width:0}
 
 /* ---- gradient text for user name ---- */
 .user-opt-name{
   font-size:12.5px;font-weight:700;
-  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;
+  overflow:hidden;line-height:1.28;
   letter-spacing:.1px;
   background:linear-gradient(135deg,#7F77DD,#D4537E,#F0997B);
   -webkit-background-clip:text;
@@ -235,17 +236,19 @@ body::before{content:'';position:fixed;bottom:0;left:0;width:100%;height:200px;b
   background-clip:text;
 }
 
-.uopt-right{display:flex;align-items:center;gap:5px;flex-shrink:0;overflow:hidden}
+.uopt-right{display:flex;align-items:center;gap:5px;flex-shrink:0}
 .uopt-role{
+  position:absolute;top:50%;right:32px;
   font-size:10px;font-weight:700;letter-spacing:.3px;
   padding:4px 11px;border-radius:20px;white-space:nowrap;
   background:#fff;border:1.5px solid #e4b8d0;color:#993556;
-  transform:translateX(120%);
+  transform:translateY(-50%) translateX(160px);
   transition:transform 0.3s cubic-bezier(0.34,1.1,0.64,1) 0.05s;
+  pointer-events:none;
 }
 .user-opt.selected .uopt-role{
   background:#fbeaf0;border-color:#D4537E;color:#72243E;
-  transform:translateX(0);
+  transform:translateY(-50%) translateX(0);
 }
 .user-opt-check{font-size:15px;color:#D4537E;opacity:0;transform:translateX(20px);transition:opacity .2s,transform .3s cubic-bezier(0.34,1.1,0.64,1) 0.1s}
 .user-opt.selected .user-opt-check{opacity:1;transform:translateX(0)}
@@ -259,10 +262,10 @@ body::before{content:'';position:fixed;bottom:0;left:0;width:100%;height:200px;b
 <!-- LOGIN -->
 <div class="login-wrap" id="loginPage">
   <div class="login-box">
-    <svg class="login-bubbles" viewBox="0 0 420 560" preserveAspectRatio="xMidYMid slice">
-      <circle cx="380" cy="20" r="70" fill="#7F77DD" opacity="0.16"/>
-      <circle cx="10" cy="540" r="80" fill="#D4537E" opacity="0.16"/>
-      <circle cx="370" cy="500" r="30" fill="#F0997B" opacity="0.16"/>
+    <svg class="login-bubbles" viewBox="0 0 680 480" preserveAspectRatio="xMidYMid slice">
+      <circle cx="610" cy="15" r="85" fill="#7F77DD" opacity="0.16"/>
+      <circle cx="20" cy="460" r="95" fill="#D4537E" opacity="0.16"/>
+      <circle cx="595" cy="430" r="28" fill="#F0997B" opacity="0.16"/>
     </svg>
     <div class="login-inner">
       <div class="login-logo">
@@ -272,6 +275,10 @@ body::before{content:'';position:fixed;bottom:0;left:0;width:100%;height:200px;b
       </div>
       <div class="login-select-label">เลือกผู้ใช้เพื่อเข้าสู่ระบบ</div>
       <div id="user-list" class="user-list"></div>
+      <div class="form-group" id="login-password-wrap" style="display:none;margin-bottom:14px">
+        <label>รหัสผ่าน</label>
+        <input type="password" id="login-password" placeholder="ใส่รหัสผ่านของคุณ" onkeydown="if(event.key==='Enter')doLogin()">
+      </div>
       <button class="btn primary" id="login-btn" style="width:100%;justify-content:center" onclick="doLogin()" disabled>เข้าสู่ระบบ</button>
     </div>
   </div>
@@ -400,7 +407,7 @@ body::before{content:'';position:fixed;bottom:0;left:0;width:100%;height:200px;b
             <div class="stat-text">
               <div class="stat-label">โปรเจกต์ทั้งหมด</div>
               <div class="stat-value c1" id="s-total">0</div>
-              <div class="stat-sub">ของทุกคน</div>
+              <div class="stat-sub">ของฉัน</div>
             </div>
           </div>
           <div class="stat-card c2">
@@ -718,10 +725,10 @@ function setSyncStatus(state) {
 }
 
 // subscribeLogs/subscribeBills ฟังข้อมูลแบบ real-time จาก Firestore
-// ทุกครั้งที่มีใครบันทึก/แก้ไข/ลบ ทุกคนที่เปิดหน้านี้อยู่จะเห็นการเปลี่ยนแปลงทันทีโดยไม่ต้อง refresh
+// กรองด้วย owner == currentUser ทุกคนจึงเห็นแค่ข้อมูลของตัวเอง (แต่ข้อมูลยังอยู่บนคลาวด์ ย้ายเครื่อง/เบราว์เซอร์แล้วก็เห็นของตัวเองเหมือนเดิม)
 function subscribeLogs() {
   if (logsUnsub) logsUnsub();
-  logsUnsub = db.collection('logs').onSnapshot(
+  logsUnsub = db.collection('logs').where('owner', '==', currentUser).onSnapshot(
     snapshot => {
       logs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       logs.sort((a, b) => (a.date || '').localeCompare(b.date || ''));
@@ -733,7 +740,7 @@ function subscribeLogs() {
 }
 function subscribeBills() {
   if (billsUnsub) billsUnsub();
-  billsUnsub = db.collection('bills').onSnapshot(
+  billsUnsub = db.collection('bills').where('owner', '==', currentUser).onSnapshot(
     snapshot => {
       bills = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       bills.sort((a, b) => (a.date || '').localeCompare(b.date || ''));
@@ -756,16 +763,20 @@ function getInitial(name) {
   const stripped = name.replace(/^(นางสาว|นาย|นาง|น\.ส\.)\s*/, '').trim();
   return (stripped || name.trim()).charAt(0);
 }
+// รหัสผ่านของแต่ละคนเก็บไว้ตรงนี้ (password) — แก้เป็นรหัสที่ต้องการได้เลย
+// ข้อควรรู้: นี่คือการเช็กฝั่ง browser เท่านั้น ใครเปิด "View page source" หรือ
+// กด F12 ดูโค้ดของเว็บ ก็จะเห็นรหัสทุกคนได้ ไม่ใช่ระบบความปลอดภัยจริง
+// เหมาะสำหรับกันคนนอกทีมสุ่มเข้ามากดเล่นเฉย ๆ ไม่เหมาะกับข้อมูลที่ต้องปกปิดจริงจัง
 const USERS = [
-  { name: 'นายบดินทร์ เทียมทอง',       photo: 'photos/badin.jpg',       role: 'เจ้าหน้าที่' },
-  { name: 'นายสนั่น ถนอมทรัพย์กุล',    photo: 'photos/sanan.jpg',       role: 'เจ้าหน้าที่' },
-  { name: 'นายพิทยา แสงดาว',           photo: 'photos/pittaya.jpg',     role: 'เจ้าหน้าที่' },
-  { name: 'นางดาวใจ พุฒตาลดง',         photo: 'photos/daojai.jpg',      role: 'เจ้าหน้าที่' },
-  { name: 'นายอานุภาพ ชาญมะเริง',      photo: 'photos/anuphap.jpg',     role: 'เจ้าหน้าที่' },
-  { name: 'นายศุภทัติ เมืองสิม',       photo: 'photos/suphathat.jpg',   role: 'เจ้าหน้าที่' },
-  { name: 'นายเอกพงศ์ อุดมเวช',        photo: 'photos/ekkapong.jpg',    role: 'เจ้าหน้าที่' },
-  { name: 'นายจักรพงษ์ นารานฤมล',      photo: 'photos/jakkapong.jpg',   role: 'เจ้าหน้าที่' },
-  { name: 'นายวัชรดล ธีระสาสน์',       photo: 'photos/watcharadon.jpg', role: 'เจ้าหน้าที่' }
+  { name: 'นายบดินทร์ เทียมทอง',       photo: 'photos/badin.jpg',       role: 'เจ้าหน้าที่', password: 'pea001' },
+  { name: 'นายสนั่น ถนอมทรัพย์กุล',    photo: 'photos/sanan.jpg',       role: 'เจ้าหน้าที่', password: 'pea002' },
+  { name: 'นายพิทยา แสงดาว',           photo: 'photos/pittaya.jpg',     role: 'เจ้าหน้าที่', password: 'pea003' },
+  { name: 'นางดาวใจ พุฒตาลดง',         photo: 'photos/daojai.jpg',      role: 'เจ้าหน้าที่', password: 'pea004' },
+  { name: 'นายอานุภาพ ชาญมะเริง',      photo: 'photos/anuphap.jpg',     role: 'เจ้าหน้าที่', password: 'pea005' },
+  { name: 'นายศุภทัติ เมืองสิม',       photo: 'photos/suphathat.jpg',   role: 'เจ้าหน้าที่', password: 'pea006' },
+  { name: 'นายเอกพงศ์ อุดมเวช',        photo: 'photos/ekkapong.jpg',    role: 'เจ้าหน้าที่', password: 'pea007' },
+  { name: 'นายจักรพงษ์ นารานฤมล',      photo: 'photos/jakkapong.jpg',   role: 'เจ้าหน้าที่', password: 'pea008' },
+  { name: 'นายวัชรดล ธีระสาสน์',       photo: 'photos/watcharadon.jpg', role: 'เจ้าหน้าที่', password: 'pea009' }
 ];
 
 const AVATAR_COLORS = ['#7F77DD','#D4537E','#F0997B','#185FA5','#3B6D11','#534AB7','#ED93B1','#378ADD','#1D9E75'];
@@ -812,10 +823,23 @@ function selectUser(el, name) {
   el.classList.add('selected');
   selectedUser = name;
   document.getElementById('login-btn').disabled = false;
+  const pwWrap = document.getElementById('login-password-wrap');
+  const pwInput = document.getElementById('login-password');
+  pwWrap.style.display = 'flex';
+  pwInput.value = '';
+  pwInput.focus();
 }
 
 function doLogin() {
   if (!selectedUser) { showToast('กรุณาเลือกผู้ใช้ก่อน'); return; }
+  const userObj = USERS.find(u => u.name === selectedUser);
+  const enteredPw = document.getElementById('login-password').value;
+  if (!userObj || enteredPw !== userObj.password) {
+    showToast('รหัสผ่านไม่ถูกต้อง');
+    document.getElementById('login-password').value = '';
+    document.getElementById('login-password').focus();
+    return;
+  }
   currentUser = selectedUser;
   setSyncStatus('connecting');
   subscribeLogs();
@@ -850,6 +874,8 @@ function logout() {
   document.getElementById('mainApp').style.display = 'none';
   document.querySelectorAll('.user-opt').forEach(e => e.classList.remove('selected'));
   document.getElementById('login-btn').disabled = true;
+  document.getElementById('login-password-wrap').style.display = 'none';
+  document.getElementById('login-password').value = '';
 }
 
 // ====== PAGES ======
@@ -1061,7 +1087,7 @@ function deleteBill(id){
 }
 function clearAllBills(){
   if(!bills.length)return;
-  if(!confirm('ล้างข้อมูลบิลทั้งหมด? การกระทำนี้ไม่สามารถย้อนกลับได้ (ลบของทุกคน)'))return;
+  if(!confirm('ล้างข้อมูลบิลทั้งหมดของคุณ? การกระทำนี้ไม่สามารถย้อนกลับได้'))return;
   const batch = db.batch();
   bills.forEach(b => batch.delete(db.collection('bills').doc(b.id)));
   batch.commit()
