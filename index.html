@@ -110,6 +110,39 @@ body::before{content:'';position:fixed;bottom:0;left:0;width:100%;height:200px;b
 .page{display:none}
 .page.active{display:block}
 
+/* ====== PAGE / MENU SWITCH TRANSITION EFFECT ====== */
+@keyframes pageEnter{
+  0%{opacity:0;transform:translateY(16px) scale(.98)}
+  100%{opacity:1;transform:translateY(0) scale(1)}
+}
+.page.active{animation:pageEnter .45s cubic-bezier(0.22,1,0.36,1)}
+@keyframes blockEnter{
+  0%{opacity:0;transform:translateY(14px)}
+  100%{opacity:1;transform:translateY(0)}
+}
+.page.active > .stats-grid > .stat-card,
+.page.active > .section,
+.page.active > .two-col > .section{
+  animation:blockEnter .5s cubic-bezier(0.22,1,0.36,1) backwards;
+}
+.page.active > .stats-grid > .stat-card:nth-child(1){animation-delay:.02s}
+.page.active > .stats-grid > .stat-card:nth-child(2){animation-delay:.08s}
+.page.active > .stats-grid > .stat-card:nth-child(3){animation-delay:.14s}
+.page.active > .stats-grid > .stat-card:nth-child(4){animation-delay:.20s}
+.page.active > .section:nth-of-type(1),
+.page.active > #admin-owner-section{animation-delay:.10s}
+.page.active > .section:nth-of-type(2){animation-delay:.16s}
+.page.active > .section:nth-of-type(3){animation-delay:.22s}
+.page.active > .two-col > .section:nth-child(1){animation-delay:.18s}
+.page.active > .two-col > .section:nth-child(2){animation-delay:.24s}
+.page.active > .filter-row{animation:blockEnter .4s cubic-bezier(0.22,1,0.36,1) backwards;animation-delay:.04s}
+@keyframes rowFadeIn{
+  0%{opacity:0;transform:translateY(6px)}
+  100%{opacity:1;transform:translateY(0)}
+}
+.table tbody tr{animation:rowFadeIn .32s ease backwards}
+.table tbody tr:nth-child(n+1){animation-delay:calc(var(--ri,0) * 0.025s)}
+
 /* Stats */
 .stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
 .stat-card{background:#fff;border:1px solid #e8e8e4;border-radius:10px;padding:14px 16px;position:relative;overflow:hidden;box-shadow:0 2px 10px rgba(124,77,255,0.06);display:flex;align-items:center;gap:12px}
@@ -1200,7 +1233,15 @@ function showPage(id, btn) {
   sessionStorage.setItem('hkt_page', id);
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
-  document.getElementById('page-' + id).classList.add('active');
+
+  const targetPage = document.getElementById('page-' + id);
+  // force a reflow so the enter-animation replays every time the menu is switched,
+  // even if this same page was already shown before (and the animation already ran once)
+  targetPage.style.animation = 'none';
+  void targetPage.offsetWidth; // reflow
+  targetPage.style.animation = '';
+  targetPage.classList.add('active');
+
   if (btn) btn.classList.add('active');
   const titles = { dashboard:'ภาพรวมการทำงาน', logs:'บันทึกงานทั้งหมด', add:'เพิ่มงานใหม่', bills:'บิลและใบแจ้งหนี้', stats:'สถิติการทำงาน' };
   document.getElementById('pageTitle').textContent = titles[id] || '';
@@ -1212,6 +1253,14 @@ function showPage(id, btn) {
 }
 function gotoAdd() { if (isCurrentUserAdmin()) return; showPage('add', document.querySelector('.nav-item:nth-child(3)')); }
 function gotoBills() { if (isCurrentUserAdmin()) return; showPage('bills', document.querySelector('.nav-item:nth-child(4)')); }
+
+// ====== Helper: stagger fade-in for freshly-rendered table rows ======
+function staggerRows(tbodyEl) {
+  if (!tbodyEl) return;
+  Array.from(tbodyEl.children).forEach((tr, i) => {
+    tr.style.setProperty('--ri', i);
+  });
+}
 
 // ====== DASHBOARD ======
 function renderDash() {
@@ -1232,6 +1281,7 @@ function renderDash() {
         <td style="color:#888;font-size:12px">${l.date || '-'}</td>
       </tr>`).join('')
     : '<tr><td colspan="3"><div class="empty-pretty">ยังไม่มีข้อมูลในเดือนนี้</div></td></tr>';
+  staggerRows(rb);
   const clients = {};
   monthLogs.forEach(l => { const c = l.client || 'ไม่ระบุ'; clients[c] = (clients[c] || 0) + 1; });
   const cs = document.getElementById('client-stats');
@@ -1265,6 +1315,7 @@ function renderDash() {
           <td style="text-align:center"><span class="badge badge-red">${o['ยกเลิก']}</span></td>
         </tr>`).join('')
       : '<tr><td colspan="6" class="empty">ยังไม่มีข้อมูลในเดือนนี้</td></tr>';
+    staggerRows(tbody);
   } else {
     ownerSection.style.display = 'none';
     twoCol.style.display = 'grid';
@@ -1301,6 +1352,7 @@ function renderLogs() {
         </div></td>
       </tr>`).join('')
     : '<tr><td colspan="8" class="empty">ไม่พบข้อมูลในเดือนนี้</td></tr>';
+  staggerRows(tbody);
 }
 function clearFilters() {
   document.getElementById('search').value='';
@@ -1516,6 +1568,7 @@ function calcBillSummary() {
       <td style="text-align:center;color:#A32D2D">${o.repair.toLocaleString()}</td>
       <td style="text-align:center;font-weight:700;color:#D4537E">${o.total.toLocaleString()}</td>
     </tr>`).join('');
+  staggerRows(tbody);
 
   document.getElementById('bill-calc-result').style.display = 'block';
 
@@ -1599,6 +1652,7 @@ function renderBills() {
         <td><button class="icon-btn del" onclick="deleteBill('${b.id}')">🗑</button></td>
       </tr>`).join('')
     : '<tr><td colspan="9" class="empty">ยังไม่มีข้อมูลในเดือนนี้ — บันทึกสรุปบิลจากฟอร์มด้านบน</td></tr>';
+  staggerRows(tbody);
 }
 
 function deleteBill(id) {
@@ -1627,8 +1681,8 @@ function renderStats() {
     days.push({ str, label, count: logs.filter(l => l.date === str).length });
   }
   const maxC = Math.max(...days.map(d => d.count), 1);
-  document.getElementById('bar-chart').innerHTML = days.map(d => `
-    <div class="bar-col">
+  document.getElementById('bar-chart').innerHTML = days.map((d,i) => `
+    <div class="bar-col" style="opacity:0;animation:blockEnter .4s cubic-bezier(0.22,1,0.36,1) forwards;animation-delay:${i*0.05}s">
       <div class="bar-cnt">${d.count > 0 ? d.count : ''}</div>
       <div class="bar" style="height:${Math.round((d.count/maxC)*90)}px"></div>
       <div class="bar-lbl">${d.label}</div>
