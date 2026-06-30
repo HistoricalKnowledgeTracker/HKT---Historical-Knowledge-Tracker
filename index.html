@@ -461,7 +461,7 @@ body::before{content:'';position:fixed;bottom:0;left:0;width:100%;height:200px;b
 
       <!-- DASHBOARD -->
       <div class="page active" id="page-dashboard">
-        <div class="stats-grid">
+        <div class="stats-grid" id="stats-grid">
           <div class="stat-card c1">
             <svg class="stat-icon-svg" width="44" height="44" viewBox="0 0 64 64">
               <defs><linearGradient id="gradFolder" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#AFA9EC"/><stop offset="1" stop-color="#534AB7"/></linearGradient></defs>
@@ -505,7 +505,7 @@ body::before{content:'';position:fixed;bottom:0;left:0;width:100%;height:200px;b
               <div class="stat-sub">รายการ</div>
             </div>
           </div>
-          <div class="stat-card c4">
+          <div class="stat-card c4" id="s-bills-card">
             <svg class="stat-icon-svg" width="44" height="44" viewBox="0 0 64 64">
               <defs><linearGradient id="gradBill" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ED93B1"/><stop offset="1" stop-color="#D4537E"/></linearGradient></defs>
               <g><animateTransform attributeName="transform" type="translate" values="0 0;0 -3;0 0" dur="2.2s" repeatCount="indefinite"/>
@@ -525,7 +525,26 @@ body::before{content:'';position:fixed;bottom:0;left:0;width:100%;height:200px;b
             </div>
           </div>
         </div>
-        <div class="two-col">
+
+        <!-- เฉพาะแอดมิน: สรุปงานแยกตามผู้บันทึกแต่ละคน (ขึ้นแทนงานล่าสุด/งานตามการไฟฟ้า) -->
+        <div class="section" id="admin-owner-section" style="display:none">
+          <div class="section-header"><span class="section-title"><i class="ti ti-users-group"></i>สรุปงานแยกตามผู้บันทึก</span></div>
+          <table class="table">
+            <thead>
+              <tr>
+                <th>ผู้บันทึก</th>
+                <th style="text-align:center">งานทั้งหมด</th>
+                <th style="text-align:center">กำลังทำ</th>
+                <th style="text-align:center">รอตรวจ</th>
+                <th style="text-align:center">เสร็จแล้ว</th>
+                <th style="text-align:center">ยกเลิก</th>
+              </tr>
+            </thead>
+            <tbody id="owner-stats-tbody"></tbody>
+          </table>
+        </div>
+
+        <div class="two-col" id="dashboard-two-col">
           <div class="section">
             <div class="section-header"><span class="section-title"><i class="ti ti-list-details"></i>งาน 5 รายการล่าสุด</span></div>
             <table class="table">
@@ -1072,6 +1091,41 @@ function renderSidebarAvatar() {
   }
   document.getElementById('sidebar-admin-badge').style.display = isCurrentUserAdmin() ? 'inline-flex' : 'none';
   setupAdminFilters();
+  setupRoleUI();
+}
+
+// ====== ROLE-BASED UI (status options + nav/buttons for admin) ======
+function setupRoleUI() {
+  const isAdmin = isCurrentUserAdmin();
+
+  // ตัวเลือกสถานะ: ผู้ใช้ทั่วไปเลือกได้ กำลังทำ/รอตรวจ/ยกเลิก, แอดมินเลือกได้แค่ เสร็จแล้ว
+  const statusOptionsAdmin = `<option value="เสร็จแล้ว">เสร็จแล้ว</option>`;
+  const statusOptionsUser = `
+    <option value="กำลังทำ">กำลังทำ</option>
+    <option value="รอตรวจ">รอตรวจ</option>
+    <option value="ยกเลิก">ยกเลิก</option>`;
+  const fStatus = document.getElementById('f-status');
+  const eStatus = document.getElementById('e-status');
+  if (fStatus) fStatus.innerHTML = isAdmin ? statusOptionsAdmin : statusOptionsUser;
+  if (eStatus) eStatus.innerHTML = isAdmin ? statusOptionsAdmin : statusOptionsUser;
+
+  // ซ่อนเมนู "เพิ่มงานใหม่" / "บิลและใบแจ้งหนี้" และปุ่มมุมขวาบน เฉพาะแอดมิน
+  const navItems = document.querySelectorAll('.nav-item');
+  const navAdd = navItems[2];   // เพิ่มงานใหม่
+  const navBills = navItems[3]; // บิลและใบแจ้งหนี้
+  if (navAdd) navAdd.style.display = isAdmin ? 'none' : '';
+  if (navBills) navBills.style.display = isAdmin ? 'none' : '';
+
+  const billsBtn = document.querySelector('.topbar-actions .btn.primary[onclick="gotoBills()"]');
+  const addBtn = document.querySelector('.topbar-actions .btn.primary[onclick="gotoAdd()"]');
+  if (billsBtn) billsBtn.style.display = isAdmin ? 'none' : '';
+  if (addBtn) addBtn.style.display = isAdmin ? 'none' : '';
+
+  // ซ่อนการ์ด "จำนวนฉบับรวม (บิล)" ในหน้าภาพรวม เฉพาะแอดมิน
+  const billsCard = document.getElementById('s-bills-card');
+  if (billsCard) billsCard.style.display = isAdmin ? 'none' : '';
+  const statsGrid = document.getElementById('stats-grid');
+  if (statsGrid) statsGrid.style.gridTemplateColumns = isAdmin ? 'repeat(3,1fr)' : 'repeat(4,1fr)';
 }
 
 function setupAdminFilters() {
@@ -1106,6 +1160,10 @@ function logout() {
 
 // ====== PAGES ======
 function showPage(id, btn) {
+  if (isCurrentUserAdmin() && (id === 'add' || id === 'bills')) {
+    id = 'dashboard';
+    btn = document.querySelectorAll('.nav-item')[0];
+  }
   sessionStorage.setItem('hkt_page', id);
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
@@ -1119,8 +1177,8 @@ function showPage(id, btn) {
   if (id === 'bills') renderBills();
   if (id === 'stats') renderStats();
 }
-function gotoAdd() { showPage('add', document.querySelector('.nav-item:nth-child(3)')); }
-function gotoBills() { showPage('bills', document.querySelector('.nav-item:nth-child(4)')); }
+function gotoAdd() { if (isCurrentUserAdmin()) return; showPage('add', document.querySelector('.nav-item:nth-child(3)')); }
+function gotoBills() { if (isCurrentUserAdmin()) return; showPage('bills', document.querySelector('.nav-item:nth-child(4)')); }
 
 // ====== DASHBOARD ======
 function renderDash() {
@@ -1148,6 +1206,36 @@ function renderDash() {
   cs.innerHTML = entries.length
     ? entries.map(([c,n]) => `<div class="mini-stat-row"><span class="label">${c}</span><span class="value">${n} งาน</span></div>`).join('')
     : '<div class="empty-pretty">ยังไม่มีข้อมูลในเดือนนี้</div>';
+
+  // เฉพาะแอดมิน: สรุปงานแยกตามผู้บันทึกแต่ละคน (ขึ้นแทนงานล่าสุด/งานตามการไฟฟ้า)
+  const ownerSection = document.getElementById('admin-owner-section');
+  const twoCol = document.getElementById('dashboard-two-col');
+  if (isCurrentUserAdmin()) {
+    ownerSection.style.display = 'block';
+    twoCol.style.display = 'grid';
+    const owners = {};
+    monthLogs.forEach(l => {
+      const name = l.owner || 'ไม่ระบุ';
+      if (!owners[name]) owners[name] = { total: 0, 'กำลังทำ': 0, 'รอตรวจ': 0, 'เสร็จแล้ว': 0, 'ยกเลิก': 0 };
+      owners[name].total++;
+      if (owners[name][l.status] !== undefined) owners[name][l.status]++;
+    });
+    const ownerEntries = Object.entries(owners).sort((a, b) => b[1].total - a[1].total);
+    const tbody = document.getElementById('owner-stats-tbody');
+    tbody.innerHTML = ownerEntries.length
+      ? ownerEntries.map(([name, o]) => `<tr>
+          <td style="font-weight:600;color:#5C5277">${name}</td>
+          <td style="text-align:center;font-weight:700;background:linear-gradient(135deg,#7F77DD,#D4537E,#F0997B);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text">${o.total}</td>
+          <td style="text-align:center"><span class="badge badge-blue">${o['กำลังทำ']}</span></td>
+          <td style="text-align:center"><span class="badge badge-amber">${o['รอตรวจ']}</span></td>
+          <td style="text-align:center"><span class="badge badge-green">${o['เสร็จแล้ว']}</span></td>
+          <td style="text-align:center"><span class="badge badge-red">${o['ยกเลิก']}</span></td>
+        </tr>`).join('')
+      : '<tr><td colspan="6" class="empty">ยังไม่มีข้อมูลในเดือนนี้</td></tr>';
+  } else {
+    ownerSection.style.display = 'none';
+    twoCol.style.display = 'grid';
+  }
 }
 
 // ====== LOGS ======
