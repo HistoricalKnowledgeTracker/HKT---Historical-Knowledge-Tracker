@@ -11,6 +11,23 @@
 <title>Historical Knowledge Tracker</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
+
+/* ====== CUTE THEMED CURSORS ====== */
+body, .login-wrap{
+  cursor:url('data:image/svg+xml;utf8,<svg xmlns=%27http://www.w3.org/2000/svg%27 width=%2730%27 height=%2730%27 viewBox=%270 0 30 30%27><path d=%27M15 1 L18.3 11.7 L29 15 L18.3 18.3 L15 29 L11.7 18.3 L1 15 L11.7 11.7 Z%27 fill=%27%237F77DD%27 stroke=%27%23ffffff%27 stroke-width=%271.4%27 stroke-linejoin=%27round%27/><circle cx=%2724%27 cy=%276%27 r=%272.4%27 fill=%27%23F0997B%27 stroke=%27%23ffffff%27 stroke-width=%271%27/></svg>') 6 6, auto;
+}
+a, button, .btn, .icon-btn, .user-opt, .user-card, .month-nav .icon-btn,
+input[type="checkbox"], input[type="radio"], select, .drop-zone, .modal-overlay .btn,
+[onclick]{
+  cursor:url('data:image/svg+xml;utf8,<svg xmlns=%27http://www.w3.org/2000/svg%27 width=%2730%27 height=%2732%27 viewBox=%270 0 30 32%27><g fill=%27%23FBDFC0%27 stroke=%27%23D4537E%27 stroke-width=%271.4%27 stroke-linejoin=%27round%27 stroke-linecap=%27round%27><path d=%27M11 30 C8.5 30 7 28.4 6.5 26.6 L3.6 16.4 C3.2 15 4 13.6 5.4 13.3 C6.6 13 7.8 13.6 8.3 14.7 L9.5 17.2 L9.5 5.4 C9.5 3.9 10.7 2.7 12.2 2.7 C13.7 2.7 14.9 3.9 14.9 5.4 L14.9 13.6 C15.3 13.3 15.8 13.1 16.4 13.1 C17.7 13.1 18.8 14 19 15.2 C19.5 14.6 20.2 14.2 21 14.2 C22.5 14.2 23.7 15.4 23.7 16.9 L23.7 17.6 C24.1 17.4 24.6 17.2 25.1 17.2 C26.6 17.2 27.8 18.4 27.8 19.9 L27.8 25.4 C27.8 28 25.7 30 23.1 30 Z%27/></g><g fill=%27%23F0997B%27><circle cx=%2724%27 cy=%276%27 r=%272%27/><circle cx=%2728%27 cy=%2710%27 r=%271.2%27/></g></svg>') 8 4, pointer;
+}
+.nav-item{
+  cursor:url('data:image/svg+xml;utf8,<svg xmlns=%27http://www.w3.org/2000/svg%27 width=%2728%27 height=%2728%27 viewBox=%270 0 28 28%27><g fill=%27%23F0997B%27 stroke=%27%23ffffff%27 stroke-width=%271.2%27 stroke-linejoin=%27round%27><circle cx=%2714%27 cy=%2714%27 r=%274.6%27/><path d=%27M14 1 L16 7 L14 11 L12 7 Z%27/><path d=%27M14 27 L16 21 L14 17 L12 21 Z%27/><path d=%27M1 14 L7 12 L11 14 L7 16 Z%27/><path d=%27M27 14 L21 16 L17 14 L21 12 Z%27/></g></svg>') 14 14, pointer;
+}
+input[type="text"], input[type="date"], input[type="number"], input[type="password"], textarea{
+  cursor:url('data:image/svg+xml;utf8,<svg xmlns=%27http://www.w3.org/2000/svg%27 width=%2722%27 height=%2728%27 viewBox=%270 0 22 28%27><rect x=%279%27 y=%272%27 width=%274%27 height=%2724%27 rx=%272%27 fill=%27%237F77DD%27 stroke=%27%23ffffff%27 stroke-width=%271.2%27/><circle cx=%2711%27 cy=%272%27 r=%272.6%27 fill=%27%23F0997B%27 stroke=%27%23ffffff%27 stroke-width=%271%27/><circle cx=%2711%27 cy=%2726%27 r=%272.6%27 fill=%27%23F0997B%27 stroke=%27%23ffffff%27 stroke-width=%271%27/></svg>') 11 14, text;
+}
+
 body{font-family:'Segoe UI',Tahoma,sans-serif;background:linear-gradient(135deg,#fce4ec,#f3e5f5,#ede7f6);color:#1a1a1a;min-height:100vh;display:flex;flex-direction:column;position:relative;overflow-x:hidden;overflow-y:auto}
 body::before{content:'';position:fixed;bottom:0;left:0;width:100%;height:200px;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 200'%3E%3Cpath d='M0,100 Q360,40 720,100 T1440,100 V200 H0 Z' fill='%23D4537E' opacity='0.10'/%3E%3Cpath d='M0,130 Q360,80 720,130 T1440,130 V200 H0 Z' fill='%237F77DD' opacity='0.12'/%3E%3C/svg%3E") bottom no-repeat;background-size:cover;pointer-events:none;z-index:0}
 
