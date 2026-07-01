@@ -522,9 +522,9 @@ body::before{content:'';position:fixed;bottom:0;left:0;width:100%;height:200px;b
               </g>
             </svg>
             <div class="stat-text">
-              <div class="stat-label">โปรเจกต์ทั้งหมด</div>
+              <div class="stat-label">ใบงาน</div>
               <div class="stat-value c1" id="s-total">0</div>
-              <div class="stat-sub" id="s-total-sub">ของฉัน</div>
+              <div class="stat-sub" id="s-total-sub">เฉพาะ</div>
             </div>
           </div>
           <div class="stat-card c2">
@@ -557,21 +557,24 @@ body::before{content:'';position:fixed;bottom:0;left:0;width:100%;height:200px;b
           </div>
           <div class="stat-card c4" id="s-bills-card">
             <svg class="stat-icon-svg" width="44" height="44" viewBox="0 0 64 64">
-              <defs><linearGradient id="gradBill" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ED93B1"/><stop offset="1" stop-color="#D4537E"/></linearGradient></defs>
+              <defs><linearGradient id="gradAllwork" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ED93B1"/><stop offset="1" stop-color="#D4537E"/></linearGradient></defs>
               <g><animateTransform attributeName="transform" type="translate" values="0 0;0 -3;0 0" dur="2.2s" repeatCount="indefinite"/>
-                <rect x="16" y="10" width="26" height="34" rx="3" fill="url(#gradBill)"/>
+                <rect x="13" y="12" width="30" height="38" rx="3" fill="url(#gradAllwork)"/>
+                <line x1="20" y1="24" x2="36" y2="24" stroke="#FBEAF0" stroke-width="2.5" stroke-linecap="round"/>
+                <line x1="20" y1="32" x2="36" y2="32" stroke="#FBEAF0" stroke-width="2.5" stroke-linecap="round" opacity="0.8"/>
+                <line x1="20" y1="40" x2="30" y2="40" stroke="#FBEAF0" stroke-width="2.5" stroke-linecap="round" opacity="0.6"/>
               </g>
-              <circle cx="44" cy="42" r="11" fill="#72243E"/>
-              <text x="44" y="46" text-anchor="middle" font-size="13" font-weight="500" fill="#FBEAF0">฿</text>
-              <circle cx="44" cy="42" r="11" fill="none" stroke="#ED93B1" stroke-width="2" opacity="0">
-                <animate attributeName="r" values="11;17" dur="1.4s" repeatCount="indefinite"/>
-                <animate attributeName="opacity" values="0.6;0" dur="1.4s" repeatCount="indefinite"/>
+              <circle cx="46" cy="44" r="10" fill="#72243E"/>
+              <path d="M41 44 L45 48 L52 40" fill="none" stroke="#FBEAF0" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+              <circle cx="46" cy="44" r="10" fill="none" stroke="#ED93B1" stroke-width="2" opacity="0">
+                <animate attributeName="r" values="10;16" dur="1.6s" repeatCount="indefinite"/>
+                <animate attributeName="opacity" values="0.6;0" dur="1.6s" repeatCount="indefinite"/>
               </circle>
             </svg>
             <div class="stat-text">
-              <div class="stat-label">จำนวนฉบับรวม (บิล)</div>
+              <div class="stat-label">รวมงานทั้งหมด</div>
               <div class="stat-value c4" id="s-bills">0</div>
-              <div class="stat-sub">ฉบับ (รวมทุกวัน)</div>
+              <div class="stat-sub">รายการ (ทุกเดือน)</div>
             </div>
           </div>
         </div>
@@ -596,14 +599,14 @@ body::before{content:'';position:fixed;bottom:0;left:0;width:100%;height:200px;b
 
         <div class="two-col" id="dashboard-two-col">
           <div class="section">
-            <div class="section-header"><span class="section-title"><i class="ti ti-list-details"></i>งาน 5 รายการล่าสุด</span></div>
+            <div class="section-header"><span class="section-title"><i class="ti ti-list-details"></i>งาน 10 รายการล่าสุด</span></div>
             <table class="table">
               <thead><tr><th>โปรเจกต์</th><th>สถานะ</th><th>วันที่</th></tr></thead>
               <tbody id="recent-tbody"></tbody>
             </table>
           </div>
           <div class="section">
-            <div class="section-header"><span class="section-title"><i class="ti ti-users"></i>งานตามการไฟฟ้า</span></div>
+            <div class="section-header"><span class="section-title" id="client-stats-title"><i class="ti ti-users"></i>งานตามการไฟฟ้า</span></div>
             <div id="client-stats"></div>
           </div>
         </div>
@@ -834,7 +837,7 @@ body::before{content:'';position:fixed;bottom:0;left:0;width:100%;height:200px;b
       <div class="page" id="page-stats">
         <div class="two-col">
           <div class="section">
-            <div class="section-header"><span class="section-title">งานแต่ละวัน (7 วันล่าสุด)</span></div>
+            <div class="section-header"><span class="section-title" id="stats-chart-title">งานแต่ละวัน (7 วันล่าสุด)</span></div>
             <div class="chart-wrap" id="bar-chart"></div>
           </div>
           <div class="section">
@@ -843,7 +846,7 @@ body::before{content:'';position:fixed;bottom:0;left:0;width:100%;height:200px;b
           </div>
         </div>
         <div class="section">
-          <div class="section-header"><span class="section-title">งานต่อการไฟฟ้า</span></div>
+          <div class="section-header"><span class="section-title" id="client-hours-title">งานต่อการไฟฟ้า</span></div>
           <div id="client-hours"></div>
         </div>
       </div>
@@ -1179,8 +1182,10 @@ function setupRoleUI() {
   const navItems = document.querySelectorAll('.nav-item');
   const navAdd = navItems[2];   // เพิ่มงานใหม่
   const navBills = navItems[3]; // บิลและใบแจ้งหนี้
+  const navStats = navItems[4]; // สถิติ (เฉพาะแอดมิน)
   if (navAdd) navAdd.style.display = isAdmin ? 'none' : '';
   if (navBills) navBills.style.display = isAdmin ? 'none' : '';
+  if (navStats) navStats.style.display = isAdmin ? '' : 'none';
 
   const billsBtn = document.querySelector('.topbar-actions .btn.primary[onclick="gotoBills()"]');
   const addBtn = document.querySelector('.topbar-actions .btn.primary[onclick="gotoAdd()"]');
@@ -1230,6 +1235,10 @@ function showPage(id, btn) {
     id = 'dashboard';
     btn = document.querySelectorAll('.nav-item')[0];
   }
+  if (!isCurrentUserAdmin() && id === 'stats') {
+    id = 'dashboard';
+    btn = document.querySelectorAll('.nav-item')[0];
+  }
   sessionStorage.setItem('hkt_page', id);
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
@@ -1265,14 +1274,13 @@ function staggerRows(tbodyEl) {
 // ====== DASHBOARD ======
 function renderDash() {
   const monthLogs = logs.filter(l => isInSelectedMonth(l.date));
-  const monthBills = bills.filter(b => isInSelectedMonth(b.date));
   document.getElementById('s-total').textContent = monthLogs.length;
   document.getElementById('s-total-sub').textContent = (isCurrentUserAdmin() ? 'ของทุกคน' : 'ของฉัน') + ' · เดือนนี้';
   document.getElementById('s-inprog').textContent = monthLogs.filter(l => l.status === 'กำลังทำ').length;
   document.getElementById('s-done').textContent = monthLogs.filter(l => l.status === 'เสร็จแล้ว').length;
-  const totalCopies = monthBills.reduce((a, b) => a + (parseInt(b.totalCount) || 0), 0);
-  document.getElementById('s-bills').textContent = totalCopies;
-  const recent = [...monthLogs].reverse().slice(0, 5);
+  // การ์ดนี้แสดงเฉพาะผู้ใช้ทั่วไป (แอดมินถูกซ่อนไว้ใน setupRoleUI) — แสดงยอดรวมงานทั้งหมดของผู้ใช้คนนี้ในทุกๆ เดือน
+  document.getElementById('s-bills').textContent = logs.length;
+  const recent = [...monthLogs].reverse().slice(0, 10);
   const rb = document.getElementById('recent-tbody');
   rb.innerHTML = recent.length
     ? recent.map(l => `<tr>
@@ -1282,13 +1290,33 @@ function renderDash() {
       </tr>`).join('')
     : '<tr><td colspan="3"><div class="empty-pretty">ยังไม่มีข้อมูลในเดือนนี้</div></td></tr>';
   staggerRows(rb);
-  const clients = {};
-  monthLogs.forEach(l => { const c = l.client || 'ไม่ระบุ'; clients[c] = (clients[c] || 0) + 1; });
+
+  // งานตามการไฟฟ้า/งานตามพื้นที่รับผิดชอบ:
+  // - ผู้ใช้ทั่วไป: แสดงตามฟิลด์ "การไฟฟ้าที่แจ้งปัญหา" เหมือนเดิม
+  // - แอดมิน: แสดงยอดรวมงานของแต่ละคน แต่ใช้ "role" (พื้นที่รับผิดชอบ) เป็นป้ายกำกับแทนชื่อ
   const cs = document.getElementById('client-stats');
-  const entries = Object.entries(clients).sort((a,b) => b[1]-a[1]).slice(0,6);
-  cs.innerHTML = entries.length
-    ? entries.map(([c,n]) => `<div class="mini-stat-row"><span class="label">${c}</span><span class="value">${n} งาน</span></div>`).join('')
-    : '<div class="empty-pretty">ยังไม่มีข้อมูลในเดือนนี้</div>';
+  const csTitle = document.getElementById('client-stats-title');
+  if (isCurrentUserAdmin()) {
+    if (csTitle) csTitle.innerHTML = '<i class="ti ti-users"></i>งานตามพื้นที่รับผิดชอบ';
+    const roleCounts = {};
+    USERS.filter(u => !u.isAdmin).forEach(u => {
+      const roleLabel = u.role || 'ไม่ระบุ';
+      const cnt = monthLogs.filter(l => l.owner === u.name).length;
+      roleCounts[roleLabel] = (roleCounts[roleLabel] || 0) + cnt;
+    });
+    const roleEntries = Object.entries(roleCounts).sort((a, b) => b[1] - a[1]);
+    cs.innerHTML = roleEntries.length
+      ? roleEntries.map(([r, n]) => `<div class="mini-stat-row"><span class="label">${r}</span><span class="value">${n} งาน</span></div>`).join('')
+      : '<div class="empty-pretty">ยังไม่มีข้อมูลในเดือนนี้</div>';
+  } else {
+    if (csTitle) csTitle.innerHTML = '<i class="ti ti-users"></i>งานตามการไฟฟ้า';
+    const clients = {};
+    monthLogs.forEach(l => { const c = l.client || 'ไม่ระบุ'; clients[c] = (clients[c] || 0) + 1; });
+    const entries = Object.entries(clients).sort((a,b) => b[1]-a[1]).slice(0,6);
+    cs.innerHTML = entries.length
+      ? entries.map(([c,n]) => `<div class="mini-stat-row"><span class="label">${c}</span><span class="value">${n} งาน</span></div>`).join('')
+      : '<div class="empty-pretty">ยังไม่มีข้อมูลในเดือนนี้</div>';
+  }
 
   // เฉพาะแอดมิน: สรุปงานแยกตามผู้บันทึกแต่ละคน (ขึ้นแทนงานล่าสุด/งานตามการไฟฟ้า)
   const ownerSection = document.getElementById('admin-owner-section');
@@ -1671,23 +1699,49 @@ function clearAllBills() {
     .catch(err => { console.error(err); showToast('ล้างข้อมูลไม่สำเร็จ'); });
 }
 
-// ====== STATS ======
+// ====== STATS (เฉพาะแอดมิน) ======
 function renderStats() {
-  const days = [];
-  for (let i = 6; i >= 0; i--) {
-    const d = new Date(); d.setDate(d.getDate() - i);
-    const str   = d.toISOString().split('T')[0];
-    const label = ['อา','จ','อ','พ','พฤ','ศ','ส'][d.getDay()];
-    days.push({ str, label, count: logs.filter(l => l.date === str).length });
-  }
-  const maxC = Math.max(...days.map(d => d.count), 1);
-  document.getElementById('bar-chart').innerHTML = days.map((d,i) => `
-    <div class="bar-col" style="opacity:0;animation:blockEnter .4s cubic-bezier(0.22,1,0.36,1) forwards;animation-delay:${i*0.05}s">
-      <div class="bar-cnt">${d.count > 0 ? d.count : ''}</div>
-      <div class="bar" style="height:${Math.round((d.count/maxC)*90)}px"></div>
-      <div class="bar-lbl">${d.label}</div>
-    </div>`).join('');
   const monthLogs = logs.filter(l => isInSelectedMonth(l.date));
+  const chartTitleEl = document.getElementById('stats-chart-title');
+
+  if (isCurrentUserAdmin()) {
+    // แอดมิน: กราฟแสดงยอดงานรวมของแต่ละคน (ใช้ role เป็นป้ายกำกับ) เฉพาะเดือนที่เลือกอยู่เท่านั้น
+    if (chartTitleEl) chartTitleEl.textContent = 'งานแต่ละคน (เดือนนี้)';
+    const roleCounts = {};
+    USERS.filter(u => !u.isAdmin).forEach(u => {
+      const roleLabel = u.role || 'ไม่ระบุ';
+      const cnt = monthLogs.filter(l => l.owner === u.name).length;
+      roleCounts[roleLabel] = (roleCounts[roleLabel] || 0) + cnt;
+    });
+    const bars = Object.entries(roleCounts).map(([label, count]) => ({ label, count }));
+    const maxC = Math.max(...bars.map(b => b.count), 1);
+    document.getElementById('bar-chart').innerHTML = bars.length
+      ? bars.map((b,i) => `
+        <div class="bar-col" style="opacity:0;animation:blockEnter .4s cubic-bezier(0.22,1,0.36,1) forwards;animation-delay:${i*0.05}s">
+          <div class="bar-cnt">${b.count > 0 ? b.count : ''}</div>
+          <div class="bar" style="height:${Math.round((b.count/maxC)*90)}px"></div>
+          <div class="bar-lbl" style="font-size:9px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:48px" title="${b.label}">${b.label}</div>
+        </div>`).join('')
+      : '<p style="color:#aaa;font-size:13px;padding:12px 0">ยังไม่มีข้อมูลในเดือนนี้</p>';
+  } else {
+    // ผู้ใช้ทั่วไป: กราฟงานแต่ละวัน (7 วันล่าสุด) เหมือนเดิม
+    if (chartTitleEl) chartTitleEl.textContent = 'งานแต่ละวัน (7 วันล่าสุด)';
+    const days = [];
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date(); d.setDate(d.getDate() - i);
+      const str   = d.toISOString().split('T')[0];
+      const label = ['อา','จ','อ','พ','พฤ','ศ','ส'][d.getDay()];
+      days.push({ str, label, count: logs.filter(l => l.date === str).length });
+    }
+    const maxC = Math.max(...days.map(d => d.count), 1);
+    document.getElementById('bar-chart').innerHTML = days.map((d,i) => `
+      <div class="bar-col" style="opacity:0;animation:blockEnter .4s cubic-bezier(0.22,1,0.36,1) forwards;animation-delay:${i*0.05}s">
+        <div class="bar-cnt">${d.count > 0 ? d.count : ''}</div>
+        <div class="bar" style="height:${Math.round((d.count/maxC)*90)}px"></div>
+        <div class="bar-lbl">${d.label}</div>
+      </div>`).join('');
+  }
+
   const statusCount = {};
   monthLogs.forEach(l => statusCount[l.status] = (statusCount[l.status] || 0) + 1);
   document.getElementById('status-breakdown').innerHTML = Object.entries(statusCount).length
@@ -1697,12 +1751,29 @@ function renderStats() {
           <span class="value">${n} รายการ</span>
         </div>`).join('')
     : '<p style="color:#aaa;font-size:13px;padding:12px 0">ยังไม่มีข้อมูลในเดือนนี้</p>';
-  const ccount = {};
-  monthLogs.forEach(l => { const c = l.client || 'ไม่ระบุ'; ccount[c] = (ccount[c] || 0) + 1; });
-  document.getElementById('client-hours').innerHTML = Object.entries(ccount).length
-    ? Object.entries(ccount).sort((a,b) => b[1]-a[1]).map(([c,n]) => `
-        <div class="mini-stat-row"><span class="label">${c}</span><span class="value">${n} งาน</span></div>`).join('')
-    : '<p style="color:#aaa;font-size:13px;padding:12px 0">ยังไม่มีข้อมูลในเดือนนี้</p>';
+  const chTitle = document.getElementById('client-hours-title');
+  if (isCurrentUserAdmin()) {
+    // แอดมิน: แสดงยอดงานรวม "ทุกเดือน" (ทุกช่วงเวลา) แยกตาม role/พื้นที่รับผิดชอบของแต่ละคน
+    if (chTitle) chTitle.textContent = 'งานรวมทุกเดือน (แยกตามพื้นที่)';
+    const roleAllTime = {};
+    USERS.filter(u => !u.isAdmin).forEach(u => {
+      const roleLabel = u.role || 'ไม่ระบุ';
+      const cnt = logs.filter(l => l.owner === u.name).length;
+      roleAllTime[roleLabel] = (roleAllTime[roleLabel] || 0) + cnt;
+    });
+    document.getElementById('client-hours').innerHTML = Object.entries(roleAllTime).length
+      ? Object.entries(roleAllTime).sort((a,b) => b[1]-a[1]).map(([r,n]) => `
+          <div class="mini-stat-row"><span class="label">${r}</span><span class="value">${n} งาน</span></div>`).join('')
+      : '<p style="color:#aaa;font-size:13px;padding:12px 0">ยังไม่มีข้อมูล</p>';
+  } else {
+    if (chTitle) chTitle.textContent = 'งานต่อการไฟฟ้า';
+    const ccount = {};
+    monthLogs.forEach(l => { const c = l.client || 'ไม่ระบุ'; ccount[c] = (ccount[c] || 0) + 1; });
+    document.getElementById('client-hours').innerHTML = Object.entries(ccount).length
+      ? Object.entries(ccount).sort((a,b) => b[1]-a[1]).map(([c,n]) => `
+          <div class="mini-stat-row"><span class="label">${c}</span><span class="value">${n} งาน</span></div>`).join('')
+      : '<p style="color:#aaa;font-size:13px;padding:12px 0">ยังไม่มีข้อมูลในเดือนนี้</p>';
+  }
 }
 
 // ====== EXPORT ======
