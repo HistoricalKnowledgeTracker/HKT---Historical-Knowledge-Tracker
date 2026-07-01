@@ -1275,7 +1275,7 @@ function staggerRows(tbodyEl) {
 function renderDash() {
   const monthLogs = logs.filter(l => isInSelectedMonth(l.date));
   document.getElementById('s-total').textContent = monthLogs.length;
-  document.getElementById('s-total-sub').textContent = (isCurrentUserAdmin() ? 'ของทุกคน' : 'ของฉัน') + ' · เดือนนี้';
+  document.getElementById('s-total-sub').textContent = (isCurrentUserAdmin() ? 'ของทุกคน' : 'เฉพาะ') + ' · เดือนนี้';
   document.getElementById('s-inprog').textContent = monthLogs.filter(l => l.status === 'กำลังทำ').length;
   document.getElementById('s-done').textContent = monthLogs.filter(l => l.status === 'เสร็จแล้ว').length;
   // การ์ดนี้แสดงเฉพาะผู้ใช้ทั่วไป (แอดมินถูกซ่อนไว้ใน setupRoleUI) — แสดงยอดรวมงานทั้งหมดของผู้ใช้คนนี้ในทุกๆ เดือน
